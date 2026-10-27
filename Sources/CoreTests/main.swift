@@ -1,6 +1,6 @@
 import Foundation
 
-let allTests: [TestCase] = tutorialTests + descriptionTests
+let allTests: [TestCase] = tutorialTests + descriptionTests + exporterTests
 
 var failedTests = 0
 for (name, body) in allTests {
