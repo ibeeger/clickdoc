@@ -4,6 +4,18 @@
 
 系统要求：macOS 14 或更高版本，Apple 芯片或 Intel 芯片。
 
+## 导出格式
+
+编辑窗口的「导出」按钮直接点击导出 Markdown 文件夹，点右侧箭头可选择其他格式：
+
+| 格式 | 用途 |
+|---|---|
+| Markdown 文件夹 | `tutorial.md` + `images/`，适合放进代码仓库或用 Markdown 编辑器查看 |
+| Notion 导入包（.zip） | 在 Notion 中选「导入 > Markdown」，选这个 zip，图片会一起导入 |
+| PDF | A4 分页，适合发给别人阅读或打印 |
+
+所有格式都会把模糊区域合成进图片，不含原始内容。
+
 ## 安装（未公证版本）
 
 1. 下载 `RecordToDocs-<版本>.dmg`，打开后把 RecordToDocs 拖进“应用程序”。

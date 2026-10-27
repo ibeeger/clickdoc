@@ -28,8 +28,16 @@ struct EditorView: View {
                 } else {
                     Button { state.openWindowAction = openWindow; state.startRecording() } label: { Label("开始录制", systemImage: "record.circle") }
                 }
-                Button { state.export() } label: { Label("导出", systemImage: "square.and.arrow.up") }
-                    .disabled(state.tutorial.isEmpty)
+                Menu {
+                    Button("Markdown 文件夹…") { state.export(.markdownFolder) }
+                    Button("Notion 导入包（.zip）…") { state.export(.notionZip) }
+                    Button("PDF…") { state.export(.pdf) }
+                } label: {
+                    Label("导出", systemImage: "square.and.arrow.up")
+                } primaryAction: {
+                    state.export(.markdownFolder)
+                }
+                .disabled(state.tutorial.isEmpty)
             }
         }
         .frame(minWidth: 760, minHeight: 480)

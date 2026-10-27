@@ -220,7 +220,19 @@ final class AppState: ObservableObject {
 
     // MARK: - Export
 
-    func export() {
+    enum ExportFormat {
+        case markdownFolder, notionZip, pdf
+
+        var panelMessage: String {
+            switch self {
+            case .markdownFolder: return "选择导出位置，将在其中新建一个以教程标题命名的文件夹"
+            case .notionZip: return "选择导出位置，将生成一个 zip，可在 Notion 中用「导入 > Markdown」导入"
+            case .pdf: return "选择导出位置，将生成一个以教程标题命名的 PDF"
+            }
+        }
+    }
+
+    func export(_ format: ExportFormat = .markdownFolder) {
         guard !tutorial.isEmpty else { return }
         NSApp.activate(ignoringOtherApps: true)
         let panel = NSOpenPanel()
@@ -229,12 +241,17 @@ final class AppState: ObservableObject {
         panel.canCreateDirectories = true
         panel.allowsMultipleSelection = false
         panel.prompt = "导出到此处"
-        panel.message = "选择导出位置，将在其中新建一个以教程标题命名的文件夹"
+        panel.message = format.panelMessage
         guard panel.runModal() == .OK, let directory = panel.url else { return }
         do {
-            let folder = try exportTutorial(tutorial, to: directory)
+            let result: URL
+            switch format {
+            case .markdownFolder: result = try exportTutorial(tutorial, to: directory)
+            case .notionZip: result = try exportNotionZip(tutorial, to: directory)
+            case .pdf: result = try exportPDF(tutorial, to: directory)
+            }
             hasUnexportedChanges = false
-            NSWorkspace.shared.activateFileViewerSelecting([folder])
+            NSWorkspace.shared.activateFileViewerSelecting([result])
         } catch {
             let alert = NSAlert(error: error)
             alert.messageText = "导出失败"
