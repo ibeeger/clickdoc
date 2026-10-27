@@ -2,8 +2,8 @@
 (() => {
   "use strict";
 
-  // ---------- Sponsor: set once GitHub Sponsors is approved, e.g. "https://github.com/sponsors/ibeeger" ----------
-  const SPONSOR_URL = "";
+  // ---------- Support link (Ko-fi), e.g. "https://ko-fi.com/<username>"; empty hides the block ----------
+  const SPONSOR_URL = "https://ko-fi.com/cuixiaohan";
   if (SPONSOR_URL) {
     document.querySelectorAll(".sponsor-link").forEach((a) => (a.href = SPONSOR_URL));
     document.querySelectorAll(".sponsor, .sponsor-nav").forEach((el) => (el.hidden = false));
@@ -69,9 +69,9 @@
     "a7": "Same idea: record clicks, get a step-by-step guide. Folge does more, such as Word and PowerPoint export, AI-written captions and brand templates, and its full version is a one-time $89. ClickDoc is lighter, entirely free and open source, has a Chinese UI and exports a Notion import package. ClickDoc is not affiliated with Folge.",
     "q6": "Found a bug or have an idea?", "a6": "Tell us on <a href=\"https://github.com/ibeeger/clickdoc/issues\" rel=\"noopener\">GitHub Issues</a>.",
     "closing.title": "Your next guide is one click-through away", "footer.feedback": "Feedback",
-    "sponsor.title": "Enjoying ClickDoc?", "sponsor.nav": "Sponsor",
-    "sponsor.body": "It's free and open source, and always will be. If it saved you some time, you can support its development through GitHub Sponsors.",
-    "sponsor.button": "Sponsor on GitHub",
+    "sponsor.title": "Enjoying ClickDoc?", "sponsor.nav": "☕ Support",
+    "sponsor.body": "It's free and open source, and always will be. If it saved you some time, you can buy me a coffee on Ko-fi to support its development.",
+    "sponsor.button": "Buy me a coffee on Ko-fi",
   };
   const TITLE = { zh: document.title, en: "ClickDoc · Click through it once. The guide writes itself." };
 
