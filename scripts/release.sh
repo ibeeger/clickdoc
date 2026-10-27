@@ -15,7 +15,7 @@ rm -rf "$STAGE"
 mkdir -p "$STAGE" "$OUT"
 cp -R build/ClickDoc.app "$STAGE/"
 ln -s /Applications "$STAGE/应用程序"
-cp packaging/安装说明.txt "$STAGE/"
+cp packaging/安装说明.txt "packaging/Install Guide.txt" "$STAGE/"
 
 rm -f "$DMG"
 hdiutil create -volname "ClickDoc $VERSION" -srcfolder "$STAGE" -fs HFS+ -format UDZO -ov "$DMG" >/dev/null

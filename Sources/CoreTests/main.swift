@@ -4,7 +4,7 @@ import RecordCore
 // Existing tests check Chinese output; English tests switch temporarily.
 ContentLanguage.override = .chinese
 
-let allTests: [TestCase] = tutorialTests + descriptionTests + exporterTests + geometryTests + rendererTests + fixTests + blurTests + exportFormatTests + draftStoreTests + captureScopeTests + annotationTests + annotationEditingTests + batchDeleteTests + englishTests
+let allTests: [TestCase] = tutorialTests + descriptionTests + exporterTests + geometryTests + rendererTests + fixTests + blurTests + exportFormatTests + draftStoreTests + captureScopeTests + annotationTests + annotationEditingTests + batchDeleteTests + englishTests + localizationTests
 
 var failedTests = 0
 for (name, body) in allTests {

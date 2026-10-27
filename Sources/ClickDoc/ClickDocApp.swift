@@ -8,10 +8,10 @@ struct ClickDocApp: App {
         MenuBarExtra("ClickDoc", systemImage: state.isRecording ? "record.circle.fill" : "record.circle") {
             MenuContent().environmentObject(state)
         }
-        Window("编辑教程", id: "editor") {
+        Window(L("编辑教程"), id: "editor") {
             EditorView().environmentObject(state)
         }
-        Window("需要权限", id: "permissions") {
+        Window(L("需要权限"), id: "permissions") {
             PermissionView()
         }
         .windowResizability(.contentSize)
@@ -29,17 +29,17 @@ private struct MenuContent: View {
                 Divider()
             }
             if state.isRecording {
-                Button("停止录制") { inject(); state.stopRecording() }
+                Button(L("停止录制")) { inject(); state.stopRecording() }
             } else {
-                Button("开始录制") { inject(); state.startRecording() }
+                Button(L("开始录制")) { inject(); state.startRecording() }
             }
-            Picker("截图范围", selection: $state.captureScope) {
+            Picker(L("截图范围"), selection: $state.captureScope) {
                 ForEach(AppState.CaptureScope.allCases, id: \.self) { Text($0.title).tag($0) }
             }
-            Button("打开编辑器") { inject(); state.show(window: "editor") }
-            Button("新建教程") { state.newTutorial() }
+            Button(L("打开编辑器")) { inject(); state.show(window: "editor") }
+            Button(L("新建教程")) { state.newTutorial() }
             Divider()
-            Button("退出") { NSApp.terminate(nil) }
+            Button(L("退出")) { NSApp.terminate(nil) }
         }
         .onAppear(perform: inject)
     }

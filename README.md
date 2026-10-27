@@ -2,6 +2,8 @@
 
 一个类似 Folge 的 macOS 菜单栏小工具：录制鼠标点击，自动截图并标出点击位置，录完可编辑步骤、添加方框/箭头/文字标注、模糊敏感信息，导出为 Markdown、Notion 导入包或 PDF 教程。
 
+界面支持中文和英文，跟随系统语言：系统首选语言为中文时显示中文，其他语言显示英文；生成的步骤描述、Markdown 和 PDF 也随之切换。
+
 截图范围可在菜单栏菜单的「截图范围」中切换：「当前窗口」只截被点击的窗口（连同它弹出的菜单），「整个屏幕」截整块显示器。
 
 系统要求：macOS 14 或更高版本，Apple 芯片或 Intel 芯片。
@@ -47,7 +49,7 @@ swift run CoreTests          # 运行逻辑层测试
 ./scripts/release.sh         # 生成 build/release/ClickDoc-<版本>.dmg
 ```
 
-版本号写在 `VERSION` 文件里。应用图标来自根目录的 `icon.png`：构建时自动居中裁成正方形、套上 macOS 圆角外形并生成 `.icns`，只在 `icon.png` 更新后才重新生成。构建脚本支持以下环境变量：
+版本号写在 `VERSION` 文件里。界面文字统一通过 `L("中文")` 获取，英文翻译在 `Localization/en.lproj/Localizable.strings`；`swift run CoreTests` 会检查每条界面文字都有英文翻译。应用图标来自根目录的 `icon.png`：构建时自动居中裁成正方形、套上 macOS 圆角外形并生成 `.icns`，只在 `icon.png` 更新后才重新生成。构建脚本支持以下环境变量：
 
 | 变量 | 作用 | 默认值 |
 |---|---|---|

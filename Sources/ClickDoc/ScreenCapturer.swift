@@ -7,9 +7,9 @@ enum CaptureError: LocalizedError {
     case noDisplay, displayNotShareable, renderFailed
     var errorDescription: String? {
         switch self {
-        case .noDisplay: return "点击位置不在任何显示器上"
-        case .displayNotShareable: return "无法获取该显示器的画面"
-        case .renderFailed: return "生成截图失败"
+        case .noDisplay: return L("点击位置不在任何显示器上")
+        case .displayNotShareable: return L("无法获取该显示器的画面")
+        case .renderFailed: return L("生成截图失败")
         }
     }
 }

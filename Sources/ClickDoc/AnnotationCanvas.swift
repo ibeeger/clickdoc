@@ -8,11 +8,11 @@ enum EditorTool: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .select: return "选择"
-        case .blur: return "模糊"
-        case .rectangle: return "方框"
-        case .arrow: return "箭头"
-        case .text: return "文字"
+        case .select: return L("选择")
+        case .blur: return L("模糊")
+        case .rectangle: return L("方框")
+        case .arrow: return L("箭头")
+        case .text: return L("文字")
         }
     }
 
@@ -28,11 +28,11 @@ enum EditorTool: String, CaseIterable, Identifiable {
 
     var hint: String {
         switch self {
-        case .select: return "点选标注可移动，拖动手柄可调整，按 Delete 删除；双击文字可修改"
-        case .blur: return "拖动框选要模糊的区域"
-        case .rectangle: return "拖动画出方框"
-        case .arrow: return "从起点拖到终点画出箭头"
-        case .text: return "在图上点一下输入文字，回车确认，Esc 取消"
+        case .select: return L("点选标注可移动，拖动手柄可调整，按 Delete 删除；双击文字可修改")
+        case .blur: return L("拖动框选要模糊的区域")
+        case .rectangle: return L("拖动画出方框")
+        case .arrow: return L("从起点拖到终点画出箭头")
+        case .text: return L("在图上点一下输入文字，回车确认，Esc 取消")
         }
     }
 }
@@ -227,7 +227,7 @@ struct AnnotationCanvas: View {
         let k = fitted.width / pixelWidth
         let fontSize = AnnotationStyle.fontSize(imageWidth: pixelWidth) * k
         let width = max(140, textSize(edit.text, imageWidth: pixelWidth).width * k + 24)
-        return TextField("输入文字", text: Binding(get: { textEdit?.text ?? "" }, set: { textEdit?.text = $0 }))
+        return TextField(L("输入文字"), text: Binding(get: { textEdit?.text ?? "" }, set: { textEdit?.text = $0 }))
             .textFieldStyle(.plain)
             .font(.system(size: fontSize, weight: .bold))
             .foregroundColor(Self.red)

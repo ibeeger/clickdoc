@@ -20,22 +20,22 @@ struct EditorView: View {
         }
         .toolbar {
             ToolbarItem(placement: .principal) {
-                TextField("教程标题", text: titleBinding)
+                TextField(L("教程标题"), text: titleBinding)
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 260)
             }
             ToolbarItemGroup(placement: .primaryAction) {
                 if state.isRecording {
-                    Button { state.openWindowAction = openWindow; state.stopRecording() } label: { Label("停止录制", systemImage: "stop.circle") }
+                    Button { state.openWindowAction = openWindow; state.stopRecording() } label: { Label(L("停止录制"), systemImage: "stop.circle") }
                 } else {
-                    Button { state.openWindowAction = openWindow; state.startRecording() } label: { Label("开始录制", systemImage: "record.circle") }
+                    Button { state.openWindowAction = openWindow; state.startRecording() } label: { Label(L("开始录制"), systemImage: "record.circle") }
                 }
                 Menu {
-                    Button("Markdown 文件夹…") { state.export(.markdownFolder) }
-                    Button("Notion 导入包（.zip）…") { state.export(.notionZip) }
+                    Button(L("Markdown 文件夹…")) { state.export(.markdownFolder) }
+                    Button(L("Notion 导入包（.zip）…")) { state.export(.notionZip) }
                     Button("PDF…") { state.export(.pdf) }
                 } label: {
-                    Label("导出", systemImage: "square.and.arrow.up")
+                    Label(L("导出"), systemImage: "square.and.arrow.up")
                 } primaryAction: {
                     state.export(.markdownFolder)
                 }
@@ -45,13 +45,13 @@ struct EditorView: View {
         .frame(minWidth: 760, minHeight: 480)
         .onAppear { state.openWindowAction = openWindow }
         .onChange(of: selection) { selectedItem = nil }
-        .confirmationDialog("删除 \(pendingDelete?.count ?? 0) 个步骤？",
+        .confirmationDialog(L("删除 \(pendingDelete?.count ?? 0) 个步骤？"),
                             isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
                             presenting: pendingDelete) { ids in
-            Button("删除", role: .destructive) { performDelete(ids) }
-            Button("取消", role: .cancel) {}
+            Button(L("删除"), role: .destructive) { performDelete(ids) }
+            Button(L("取消"), role: .cancel) {}
         } message: { _ in
-            Text("删除后无法恢复。")
+            Text(L("删除后无法恢复。"))
         }
     }
 
@@ -62,9 +62,9 @@ struct EditorView: View {
                     .tag(step.id)
                     .contextMenu {
                         let targets = deletionTargets(clicked: step.id, selection: selection)
-                        Button(targets.count > 1 ? "删除所选的 \(targets.count) 个步骤" : "删除") { requestDelete(targets) }
+                        Button(targets.count > 1 ? L("删除所选的 \(targets.count) 个步骤") : L("删除")) { requestDelete(targets) }
                         Divider()
-                        Button("全选") { selectAll() }
+                        Button(L("全选")) { selectAll() }
                     }
             }
             .onMove { state.moveSteps(fromOffsets: $0, toOffset: $1) }
@@ -80,7 +80,7 @@ struct EditorView: View {
         }
         .overlay {
             if state.tutorial.isEmpty {
-                Text("还没有步骤。从菜单栏开始录制。")
+                Text(L("还没有步骤。从菜单栏开始录制。"))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding()
@@ -92,11 +92,11 @@ struct EditorView: View {
     private var detail: some View {
         if selection.count > 1 {
             VStack(spacing: 12) {
-                Text("已选择 \(selection.count) 个步骤").font(.title3)
+                Text(L("已选择 \(selection.count) 个步骤")).font(.title3)
                 Button(role: .destructive) { requestDelete(selection) } label: {
-                    Label("删除这 \(selection.count) 个步骤", systemImage: "trash")
+                    Label(L("删除这 \(selection.count) 个步骤"), systemImage: "trash")
                 }
-                Text("按住 ⌘ 点选多个，按住 ⇧ 连续选择，⌘A 全选")
+                Text(L("按住 ⌘ 点选多个，按住 ⇧ 连续选择，⌘A 全选"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -109,7 +109,7 @@ struct EditorView: View {
                                  onCommitAnnotations: { state.setAnnotations(id: id, $0) })
                     .id(id)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                Text("描述").font(.headline)
+                Text(L("描述")).font(.headline)
                 TextEditor(text: descriptionBinding(id))
                     .id(id)  // fresh editor per step, so text never carries over between selections
                     .font(.body)
@@ -118,21 +118,21 @@ struct EditorView: View {
             }
             .padding()
         } else {
-            Text("选择一个步骤").foregroundStyle(.secondary)
+            Text(L("选择一个步骤")).foregroundStyle(.secondary)
         }
     }
 
     private func markupTools(_ step: Step) -> some View {
         HStack(spacing: 8) {
-            Picker("工具", selection: $tool) {
+            Picker(L("工具"), selection: $tool) {
                 ForEach(EditorTool.allCases) { Label($0.title, systemImage: $0.icon).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
             .fixedSize()
-            Button("删除选中") { deleteSelected(in: step) }
+            Button(L("删除选中")) { deleteSelected(in: step) }
                 .disabled(selectedItem == nil)
-            Button("清除全部") {
+            Button(L("清除全部")) {
                 selectedItem = nil
                 state.setBlurRegions(id: step.id, [])
                 state.setAnnotations(id: step.id, [])
@@ -199,7 +199,7 @@ private struct StepRow: View {
                 .frame(width: 80, height: 48)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
             VStack(alignment: .leading, spacing: 2) {
-                Text("步骤 \(index)").font(.caption).foregroundStyle(.secondary)
+                Text(L("步骤 \(index)")).font(.caption).foregroundStyle(.secondary)
                 Text(step.description.split(separator: "\n", omittingEmptySubsequences: false).first.map(String.init) ?? "")
                     .lineLimit(1)
             }

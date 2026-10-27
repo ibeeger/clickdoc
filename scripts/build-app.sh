@@ -28,6 +28,9 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/ClickDoc"
 
+# UI translations (en, zh-Hans).
+cp -R Localization/*.lproj "$APP/Contents/Resources/"
+
 # App icon from ./icon.png, regenerated only when the source changes.
 ICON_PLIST=""
 if [ -f icon.png ]; then
@@ -52,6 +55,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleDisplayName</key><string>ClickDoc</string>
     <key>CFBundleExecutable</key><string>ClickDoc</string>
     <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleDevelopmentRegion</key><string>en</string>
+    <key>CFBundleLocalizations</key><array><string>en</string><string>zh-Hans</string></array>
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
     <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>

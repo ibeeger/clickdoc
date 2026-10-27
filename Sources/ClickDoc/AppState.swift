@@ -12,7 +12,7 @@ final class AppState: ObservableObject {
 
     enum CaptureScope: String, CaseIterable {
         case window, screen
-        var title: String { self == .window ? "当前窗口" : "整个屏幕" }
+        var title: String { self == .window ? L("当前窗口") : L("整个屏幕") }
     }
 
     @Published var captureScope: CaptureScope =
@@ -63,7 +63,7 @@ final class AppState: ObservableObject {
             let aside = draftStore.directory.deletingLastPathComponent()
                 .appendingPathComponent("draft-unreadable-\(Int(Date().timeIntervalSince1970))")
             try? FileManager.default.moveItem(at: draftStore.directory, to: aside)
-            lastError = "上次的草稿无法读取，已另存到 \(aside.path)"
+            lastError = L("上次的草稿无法读取，已另存到 \(aside.path)")
         }
     }
 
@@ -74,7 +74,7 @@ final class AppState: ObservableObject {
                 try store.save(tutorial, hasUnexportedChanges: dirty)
             } catch {
                 DispatchQueue.main.async { [weak self] in
-                    self?.lastError = "自动保存草稿失败：\(error.localizedDescription)"
+                    self?.lastError = L("自动保存草稿失败：\(error.localizedDescription)")
                 }
             }
         }
@@ -93,7 +93,7 @@ final class AppState: ObservableObject {
     func startRecording() {
         guard !isRecording else { return }
         guard Permissions.allGranted else {
-            lastError = "缺少录制所需的系统权限"
+            lastError = L("缺少录制所需的系统权限")
             show(window: "permissions")
             return
         }
@@ -101,7 +101,7 @@ final class AppState: ObservableObject {
             MainActor.assumeIsolated { self?.receive(click) }
         }
         guard monitor.start() else {
-            lastError = "无法监听鼠标点击，请检查辅助功能权限"
+            lastError = L("无法监听鼠标点击，请检查辅助功能权限")
             show(window: "permissions")
             return
         }
@@ -231,7 +231,7 @@ final class AppState: ObservableObject {
                 lastStepClick = (click.location, click.timestamp)
                 hasUnexportedChanges = true
             } catch {
-                lastError = "截图失败：\(error.localizedDescription)"
+                lastError = L("截图失败：\(error.localizedDescription)")
             }
         }
     }
@@ -240,9 +240,9 @@ final class AppState: ObservableObject {
         if hasUnexportedChanges && !tutorial.isEmpty {
             NSApp.activate(ignoringOtherApps: true)
             let alert = NSAlert()
-            alert.messageText = "当前教程尚未导出，新建将丢失这些步骤。确定继续？"
-            alert.addButton(withTitle: "新建")
-            alert.addButton(withTitle: "取消")
+            alert.messageText = L("当前教程尚未导出，新建将丢失这些步骤。确定继续？")
+            alert.addButton(withTitle: L("新建"))
+            alert.addButton(withTitle: L("取消"))
             guard alert.runModal() == .alertFirstButtonReturn else { return }
         }
         tutorial = Tutorial()
@@ -318,9 +318,9 @@ final class AppState: ObservableObject {
 
         var panelMessage: String {
             switch self {
-            case .markdownFolder: return "选择导出位置，将在其中新建一个以教程标题命名的文件夹"
-            case .notionZip: return "选择导出位置，将生成一个 zip，可在 Notion 中用「导入 > Markdown」导入"
-            case .pdf: return "选择导出位置，将生成一个以教程标题命名的 PDF"
+            case .markdownFolder: return L("选择导出位置，将在其中新建一个以教程标题命名的文件夹")
+            case .notionZip: return L("选择导出位置，将生成一个 zip，可在 Notion 中用「导入 > Markdown」导入")
+            case .pdf: return L("选择导出位置，将生成一个以教程标题命名的 PDF")
             }
         }
     }
@@ -334,7 +334,7 @@ final class AppState: ObservableObject {
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
         panel.allowsMultipleSelection = false
-        panel.prompt = "导出到此处"
+        panel.prompt = L("导出到此处")
         panel.message = format.panelMessage
         guard panel.runModal() == .OK, let directory = panel.url else { return }
         do {
@@ -348,7 +348,7 @@ final class AppState: ObservableObject {
             NSWorkspace.shared.activateFileViewerSelecting([result])
         } catch {
             let alert = NSAlert(error: error)
-            alert.messageText = "导出失败"
+            alert.messageText = L("导出失败")
             alert.informativeText = error.localizedDescription
             alert.runModal()
         }

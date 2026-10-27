@@ -1,0 +1,32 @@
+ClickDoc Install Guide
+======================
+
+ClickDoc is not notarized by Apple, so macOS blocks it the first time you open it
+("cannot verify the developer" or "is damaged"). The file is fine; macOS treats every
+un-notarized app this way. Install it like this:
+
+1. Drag ClickDoc into the Applications folder on the right.
+
+2. Remove the quarantine flag (either way works):
+
+   A (recommended): open Terminal, paste this line and press Return:
+
+       xattr -dr com.apple.quarantine /Applications/ClickDoc.app
+
+   B: open ClickDoc once and dismiss the warning. Then open
+      System Settings > Privacy & Security, scroll down to ClickDoc,
+      click "Open Anyway" and confirm with your password.
+
+3. Open ClickDoc. It has no Dock icon; look for the round icon in the menu bar.
+
+4. The first time you click "Start Recording", turn on these two permissions in
+   System Settings > Privacy & Security:
+   - Accessibility
+   - Screen Recording
+   Then quit and reopen ClickDoc.
+
+Updating: replace the old app with the new one, then repeat step 2. macOS may ask for
+the permissions again; if an old ClickDoc entry is already listed under Accessibility,
+remove it with "−" and grant access again.
+
+Requirements: macOS 14 or later, Apple silicon or Intel.
