@@ -1,12 +1,27 @@
 #!/usr/bin/env bash
-# Builds build/RecordToDocs.app. Set SIGN_IDENTITY to a keychain code-signing
-# identity to keep the same signature across rebuilds (avoids re-granting
-# Screen Recording / Accessibility permissions). Defaults to ad-hoc signing.
+# Builds build/RecordToDocs.app as a universal binary (Apple silicon + Intel).
+# Environment:
+#   SIGN_IDENTITY  keychain code-signing identity; keeps the same signature across
+#                  rebuilds (avoids re-granting permissions). Defaults to ad-hoc.
+#   BUNDLE_ID      bundle identifier. Defaults to com.local.recordtodocs.
+#                  Never change it after release: macOS treats it as another app.
+#   VERSION        version string. Defaults to the contents of ./VERSION.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-swift build -c release --product RecordToDocs
-BIN="$(swift build -c release --show-bin-path)/RecordToDocs"
+BUNDLE_ID="${BUNDLE_ID:-com.local.recordtodocs}"
+VERSION="${VERSION:-$(cat VERSION 2>/dev/null || echo 0.0.0)}"
+BUILD_NUMBER="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
+
+BINS=()
+for ARCH in arm64 x86_64; do
+    TRIPLE="$ARCH-apple-macosx14.0"
+    swift build -c release --product RecordToDocs --triple "$TRIPLE"
+    BINS+=("$(swift build -c release --triple "$TRIPLE" --show-bin-path)/RecordToDocs")
+done
+mkdir -p build
+BIN=build/RecordToDocs-universal
+lipo -create "${BINS[@]}" -output "$BIN"
 
 APP=build/RecordToDocs.app
 rm -rf "$APP"
@@ -18,12 +33,12 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleIdentifier</key><string>com.local.recordtodocs</string>
+    <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
     <key>CFBundleName</key><string>RecordToDocs</string>
     <key>CFBundleExecutable</key><string>RecordToDocs</string>
     <key>CFBundlePackageType</key><string>APPL</string>
-    <key>CFBundleShortVersionString</key><string>0.1.0</string>
-    <key>CFBundleVersion</key><string>1</string>
+    <key>CFBundleShortVersionString</key><string>$VERSION</string>
+    <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
@@ -32,9 +47,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 IDENTITY="${SIGN_IDENTITY:--}"
-codesign --force --deep --sign "$IDENTITY" --identifier com.local.recordtodocs "$APP"
+codesign --force --deep --sign "$IDENTITY" --identifier "$BUNDLE_ID" "$APP"
 
-echo "Built: $(pwd)/$APP"
+echo "Built: $(pwd)/$APP ($VERSION, $(lipo -archs "$APP/Contents/MacOS/RecordToDocs"))"
 if [ "$IDENTITY" = "-" ]; then
     echo "提示：当前为 ad-hoc 签名，每次重新构建后可能需要重新授权。"
     echo "      可在钥匙串中创建自签名代码签名证书，然后用 SIGN_IDENTITY=\"证书名\" ./scripts/build-app.sh 构建。"
