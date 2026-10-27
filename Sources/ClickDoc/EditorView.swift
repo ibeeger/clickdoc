@@ -6,8 +6,8 @@ struct EditorView: View {
     @EnvironmentObject var state: AppState
     @Environment(\.openWindow) private var openWindow
     @State private var selection: UUID?
-    @State private var blurTool = false
-    @State private var selectedRegion: Int?
+    @State private var tool: EditorTool = .select
+    @State private var selectedItem: CanvasItem?
 
     var body: some View {
         NavigationSplitView {
@@ -42,7 +42,7 @@ struct EditorView: View {
         }
         .frame(minWidth: 760, minHeight: 480)
         .onAppear { state.openWindowAction = openWindow }
-        .onChange(of: selection) { selectedRegion = nil }
+        .onChange(of: selection) { selectedItem = nil }
     }
 
     private var stepList: some View {
@@ -72,10 +72,11 @@ struct EditorView: View {
     private var detail: some View {
         if let id = selection, let step = state.tutorial.steps.first(where: { $0.id == id }) {
             VStack(alignment: .leading, spacing: 12) {
-                blurTools(step)
-                BlurCanvas(image: state.fullImage(for: step), regions: step.blurRegions, editing: blurTool,
-                           selected: $selectedRegion,
-                           onCommit: { state.setBlurRegions(id: id, $0) })
+                markupTools(step)
+                AnnotationCanvas(image: state.fullImage(for: step), blurRegions: step.blurRegions,
+                                 annotations: step.annotations, tool: tool, selected: $selectedItem,
+                                 onCommitBlur: { state.setBlurRegions(id: id, $0) },
+                                 onCommitAnnotations: { state.setAnnotations(id: id, $0) })
                     .id(id)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 Text("描述").font(.headline)
@@ -91,30 +92,41 @@ struct EditorView: View {
         }
     }
 
-    private func blurTools(_ step: Step) -> some View {
+    private func markupTools(_ step: Step) -> some View {
         HStack(spacing: 8) {
-            Toggle(isOn: $blurTool) { Label("模糊", systemImage: "eye.slash") }
-                .toggleStyle(.button)
-            Button("删除选中区域") {
-                guard let i = selectedRegion, step.blurRegions.indices.contains(i) else { return }
-                var next = step.blurRegions
-                next.remove(at: i)
-                selectedRegion = nil
-                state.setBlurRegions(id: step.id, next)
+            Picker("工具", selection: $tool) {
+                ForEach(EditorTool.allCases) { Label($0.title, systemImage: $0.icon).tag($0) }
             }
-            .disabled(!blurTool || selectedRegion == nil)
-            Button("清除全部模糊") {
-                selectedRegion = nil
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .fixedSize()
+            Button("删除选中") { deleteSelected(in: step) }
+                .disabled(selectedItem == nil)
+            Button("清除全部") {
+                selectedItem = nil
                 state.setBlurRegions(id: step.id, [])
+                state.setAnnotations(id: step.id, [])
             }
-            .disabled(step.blurRegions.isEmpty)
-            if blurTool {
-                Text("在图上拖动框选要模糊的区域；拖动框可移动，拖右下角可调整大小，按 Delete 删除")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
+            .disabled(step.blurRegions.isEmpty && step.annotations.isEmpty)
+            Text(tool.hint)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
+    }
+
+    private func deleteSelected(in step: Step) {
+        switch selectedItem {
+        case .blur(let i)? where step.blurRegions.indices.contains(i):
+            var next = step.blurRegions
+            next.remove(at: i)
+            state.setBlurRegions(id: step.id, next)
+        case .annotation(let id)?:
+            state.setAnnotations(id: step.id, step.annotations.filter { $0.id != id })
+        default:
+            break
+        }
+        selectedItem = nil
     }
 
     private var titleBinding: Binding<String> {

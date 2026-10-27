@@ -243,7 +243,7 @@ final class AppState: ObservableObject {
     func thumbnail(for step: Step) -> NSImage {
         if let cached = thumbnailCache[step.id] { return cached }
         let image = thumbnailImage(fromPNG: step.pngData, maxPixelSize: 240)
-            .flatMap { applyBlur(to: $0, regions: step.blurRegions) }
+            .flatMap { composeStepImage($0, step: step) }
             .map { NSImage(cgImage: $0, size: .zero) } ?? NSImage()
         thumbnailCache[step.id] = image
         return image
@@ -268,6 +268,12 @@ final class AppState: ObservableObject {
 
     func setBlurRegions(id: UUID, _ regions: [CGRect]) {
         tutorial.setBlurRegions(id: id, regions)
+        thumbnailCache[id] = nil
+        hasUnexportedChanges = true
+    }
+
+    func setAnnotations(id: UUID, _ annotations: [Annotation]) {
+        tutorial.setAnnotations(id: id, annotations)
         thumbnailCache[id] = nil
         hasUnexportedChanges = true
     }
