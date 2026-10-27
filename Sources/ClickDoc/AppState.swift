@@ -23,7 +23,7 @@ final class AppState: ObservableObject {
     private var lastStepClick: (location: CGPoint, time: Date)?
     private let draftStore = DraftStore.standard()
     /// Serializes draft writes off the main thread.
-    private let saveQueue = DispatchQueue(label: "RecordToDocs.draft-save")
+    private let saveQueue = DispatchQueue(label: "ClickDoc.draft-save")
     private var cancellables: Set<AnyCancellable> = []
 
     init() {

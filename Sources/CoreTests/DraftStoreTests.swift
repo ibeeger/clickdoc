@@ -68,4 +68,24 @@ let draftStoreTests: [TestCase] = [
         expect(try store.load() == nil)
         expectEqual(imageFiles(dir), [])
     }),
+    ("testMigrateLegacyDraftMovesWhenNewMissing", {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("rtd-mig-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let legacy = root.appendingPathComponent("RecordToDocs/draft"), new = root.appendingPathComponent("ClickDoc/draft")
+        let step = Step(description: "旧草稿", pngData: Data([9]))
+        try DraftStore(directory: legacy).save(Tutorial(title: "旧", steps: [step]), hasUnexportedChanges: true)
+        DraftStore.migrateLegacyDraft(from: legacy, to: new)
+        expectEqual(try DraftStore(directory: new).load()?.tutorial.steps.map(\.description), ["旧草稿"])
+        expect(!FileManager.default.fileExists(atPath: legacy.path), "legacy moved")
+    }),
+    ("testMigrateLegacyDraftKeepsExistingNewDraft", {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("rtd-mig-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let legacy = root.appendingPathComponent("RecordToDocs/draft"), new = root.appendingPathComponent("ClickDoc/draft")
+        try DraftStore(directory: legacy).save(Tutorial(title: "旧"), hasUnexportedChanges: true)
+        try DraftStore(directory: new).save(Tutorial(title: "新"), hasUnexportedChanges: true)
+        DraftStore.migrateLegacyDraft(from: legacy, to: new)
+        expectEqual(try DraftStore(directory: new).load()?.tutorial.title, "新")
+        expect(FileManager.default.fileExists(atPath: legacy.path), "legacy left alone")
+    }),
 ]

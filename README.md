@@ -1,4 +1,4 @@
-# RecordToDocs
+# ClickDoc
 
 一个类似 Folge 的 macOS 菜单栏小工具：录制鼠标点击，自动截图并标出点击位置，录完可编辑步骤、模糊敏感信息，导出为 Markdown + PNG 教程。
 
@@ -18,16 +18,16 @@
 
 ## 草稿
 
-当前教程会自动保存到 `~/Library/Application Support/RecordToDocs/draft/`，退出后重新打开会自动恢复。
+当前教程会自动保存到 `~/Library/Application Support/ClickDoc/draft/`，退出后重新打开会自动恢复。旧版本（RecordToDocs）留下的草稿会在首次启动时自动迁移过来。
 草稿里保存的是原始截图和模糊区域，导出时才合成模糊。点「新建教程」会清空草稿（未导出时会先确认）。
 
 ## 安装（未公证版本）
 
-1. 下载 `RecordToDocs-<版本>.dmg`，打开后把 RecordToDocs 拖进“应用程序”。
+1. 下载 `ClickDoc-<版本>.dmg`，打开后把 ClickDoc 拖进“应用程序”。
 2. 本应用未经苹果公证，首次打开会被系统拦截。打开“终端”执行：
 
    ```
-   xattr -dr com.apple.quarantine /Applications/RecordToDocs.app
+   xattr -dr com.apple.quarantine /Applications/ClickDoc.app
    ```
 
    或者在“系统设置 > 隐私与安全性”底部点“仍要打开”。
@@ -41,8 +41,8 @@ dmg 里的 `安装说明.txt` 有更详细的步骤。
 
 ```
 swift run CoreTests          # 运行逻辑层测试
-./scripts/build-app.sh       # 构建 build/RecordToDocs.app（通用二进制）
-./scripts/release.sh         # 生成 build/release/RecordToDocs-<版本>.dmg
+./scripts/build-app.sh       # 构建 build/ClickDoc.app（通用二进制）
+./scripts/release.sh         # 生成 build/release/ClickDoc-<版本>.dmg
 ```
 
 版本号写在 `VERSION` 文件里。应用图标来自根目录的 `icon.png`：构建时自动居中裁成正方形、套上 macOS 圆角外形并生成 `.icns`，只在 `icon.png` 更新后才重新生成。构建脚本支持以下环境变量：
@@ -50,7 +50,7 @@ swift run CoreTests          # 运行逻辑层测试
 | 变量 | 作用 | 默认值 |
 |---|---|---|
 | `VERSION` | 版本号 | `VERSION` 文件内容 |
-| `BUNDLE_ID` | 应用标识，发布后不要再改 | `com.local.recordtodocs` |
+| `BUNDLE_ID` | 应用标识，发布后不要再改 | `com.local.clickdoc` |
 | `SIGN_IDENTITY` | 钥匙串里的代码签名证书名 | ad-hoc 签名 |
 
 ## 发布新版本

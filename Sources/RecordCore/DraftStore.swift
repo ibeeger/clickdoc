@@ -12,10 +12,19 @@ public struct DraftStore {
         self.fileManager = fileManager
     }
 
-    /// `~/Library/Application Support/RecordToDocs/draft`
+    /// `~/Library/Application Support/ClickDoc/draft`, adopting a draft left by the app's former name.
     public static func standard() -> DraftStore {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return DraftStore(directory: base.appendingPathComponent("RecordToDocs/draft", isDirectory: true))
+        let directory = base.appendingPathComponent("ClickDoc/draft", isDirectory: true)
+        migrateLegacyDraft(from: base.appendingPathComponent("RecordToDocs/draft", isDirectory: true), to: directory)
+        return DraftStore(directory: directory)
+    }
+
+    /// Moves a draft from `legacy` to `new` unless a draft already exists at `new`.
+    public static func migrateLegacyDraft(from legacy: URL, to new: URL, fileManager: FileManager = .default) {
+        guard fileManager.fileExists(atPath: legacy.path), !fileManager.fileExists(atPath: new.path) else { return }
+        try? fileManager.createDirectory(at: new.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? fileManager.moveItem(at: legacy, to: new)
     }
 
     private struct Manifest: Codable {

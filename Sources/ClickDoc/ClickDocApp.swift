@@ -1,11 +1,11 @@
 import SwiftUI
 
 @main
-struct RecordToDocsApp: App {
+struct ClickDocApp: App {
     @StateObject private var state = AppState()
 
     var body: some Scene {
-        MenuBarExtra("record_to_docs", systemImage: state.isRecording ? "record.circle.fill" : "record.circle") {
+        MenuBarExtra("ClickDoc", systemImage: state.isRecording ? "record.circle.fill" : "record.circle") {
             MenuContent().environmentObject(state)
         }
         Window("编辑教程", id: "editor") {

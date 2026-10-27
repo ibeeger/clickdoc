@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "RecordToDocs",
+    name: "ClickDoc",
     platforms: [.macOS(.v14)],
     targets: [
         .target(name: "RecordCore"),
-        .executableTarget(name: "RecordToDocs", dependencies: ["RecordCore"]),
+        .executableTarget(name: "ClickDoc", dependencies: ["RecordCore"]),
         .executableTarget(name: "CoreTests", dependencies: ["RecordCore"]),
     ]
 )
