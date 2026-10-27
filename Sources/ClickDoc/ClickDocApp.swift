@@ -33,6 +33,9 @@ private struct MenuContent: View {
             } else {
                 Button("开始录制") { inject(); state.startRecording() }
             }
+            Picker("截图范围", selection: $state.captureScope) {
+                ForEach(AppState.CaptureScope.allCases, id: \.self) { Text($0.title).tag($0) }
+            }
             Button("打开编辑器") { inject(); state.show(window: "editor") }
             Button("新建教程") { state.newTutorial() }
             Divider()

@@ -10,6 +10,16 @@ final class AppState: ObservableObject {
     @Published var lastError: String?
     @Published var hasUnexportedChanges = false
 
+    enum CaptureScope: String, CaseIterable {
+        case window, screen
+        var title: String { self == .window ? "当前窗口" : "整个屏幕" }
+    }
+
+    @Published var captureScope: CaptureScope =
+        CaptureScope(rawValue: UserDefaults.standard.string(forKey: "captureScope") ?? "") ?? .window {
+        didSet { UserDefaults.standard.set(captureScope.rawValue, forKey: "captureScope") }
+    }
+
     /// Injected from a view, since SwiftUI only exposes `openWindow` through the environment.
     var openWindowAction: OpenWindowAction?
 
@@ -125,15 +135,24 @@ final class AppState: ObservableObject {
         let info = ElementInfo(pid: inspected.pid, appName: appName, elementName: inspected.elementName)
         // Start the screenshot now so it reflects this click, not later ones; only appending is serialized.
         let needsCapture = !(click.button == .left && click.clickCount >= 3)
+        let crop = captureScope == .window ? Self.windowCrop(at: click.location, windows: windows) : nil
         let capturer = capturer
         let capture: Task<Data, Error>? = needsCapture
-            ? Task { try await capturer.highlightedPNG(for: click.location) }
+            ? Task { try await capturer.highlightedPNG(for: click.location, crop: crop) }
             : nil
         let previous = chain
         chain = Task { @MainActor [weak self] in
             await previous?.value
             await self?.process(click, info, capture)
         }
+    }
+
+    /// Crop for "当前窗口" mode, decided at click time so it matches what was on screen.
+    private static func windowCrop(at point: CGPoint, windows: [WindowSnapshot]) -> CGRect? {
+        var displayID: CGDirectDisplayID = 0
+        var count: UInt32 = 0
+        guard CGGetDisplaysWithPoint(point, 1, &displayID, &count) == .success, count > 0 else { return nil }
+        return captureCropRect(click: point, windows: windows, displayFrame: CGDisplayBounds(displayID))
     }
 
     private static func windowSnapshots() -> [WindowSnapshot] {
