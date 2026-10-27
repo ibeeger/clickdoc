@@ -1,6 +1,10 @@
 import Foundation
+import RecordCore
 
-let allTests: [TestCase] = tutorialTests + descriptionTests + exporterTests + geometryTests + rendererTests + fixTests + blurTests + exportFormatTests + draftStoreTests + captureScopeTests + annotationTests + annotationEditingTests + batchDeleteTests
+// Existing tests check Chinese output; English tests switch temporarily.
+ContentLanguage.override = .chinese
+
+let allTests: [TestCase] = tutorialTests + descriptionTests + exporterTests + geometryTests + rendererTests + fixTests + blurTests + exportFormatTests + draftStoreTests + captureScopeTests + annotationTests + annotationEditingTests + batchDeleteTests + englishTests
 
 var failedTests = 0
 for (name, body) in allTests {

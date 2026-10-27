@@ -24,7 +24,7 @@ public struct Tutorial: Equatable {
     public var title: String
     public private(set) var steps: [Step]
 
-    public init(title: String = "未命名教程", steps: [Step] = []) {
+    public init(title: String = ContentLanguage.current.untitledTitle, steps: [Step] = []) {
         self.title = title
         self.steps = steps
     }

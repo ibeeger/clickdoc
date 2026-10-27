@@ -6,13 +6,14 @@ public func imageFileName(index: Int) -> String {
 }
 
 public func renderMarkdown(_ tutorial: Tutorial) -> String {
+    let lang = ContentLanguage.current
     var blocks = ["# \(tutorial.title)"]
     for (offset, step) in tutorial.steps.enumerated() {
         let n = offset + 1
-        blocks.append("## 步骤 \(n)")
+        blocks.append("## \(lang.stepHeading(n))")
         let text = step.description.trimmingCharacters(in: .whitespacesAndNewlines)
         if !text.isEmpty { blocks.append(text) }
-        blocks.append("![步骤 \(n)](images/\(imageFileName(index: n)))")
+        blocks.append("![\(lang.stepHeading(n))](images/\(imageFileName(index: n)))")
     }
     return blocks.joined(separator: "\n\n") + "\n"
 }
@@ -23,7 +24,7 @@ public func sanitizeFolderName(_ title: String) -> String {
     var name = replaced.trimmingCharacters(in: .whitespaces)
     while name.hasPrefix(".") { name.removeFirst() }
     name = name.trimmingCharacters(in: .whitespaces)
-    return name.isEmpty ? "未命名教程" : name
+    return name.isEmpty ? ContentLanguage.current.untitledTitle : name
 }
 
 public func uniqueFolderURL(in directory: URL, name: String, exists: (URL) -> Bool) -> URL {
@@ -51,7 +52,7 @@ public func exportTutorial(_ tutorial: Tutorial, to directory: URL, fileManager:
 
 public enum ExportError: LocalizedError {
     case imageProcessingFailed
-    public var errorDescription: String? { "处理截图失败" }
+    public var errorDescription: String? { ContentLanguage.current.imageProcessingFailed }
 }
 
 /// The screenshot as readers see it: blur first, then annotations on top.

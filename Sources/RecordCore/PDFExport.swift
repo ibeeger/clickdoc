@@ -111,11 +111,12 @@ public func renderPDF(_ tutorial: Tutorial) throws -> Data {
     let writer = PDFWriter(ctx: ctx)
     writer.ensurePage()
     let title = tutorial.title.trimmingCharacters(in: .whitespacesAndNewlines)
-    writer.draw(TextBlock(title.isEmpty ? "未命名教程" : title, font: titleFont, color: black))
+    let lang = ContentLanguage.current
+    writer.draw(TextBlock(title.isEmpty ? lang.untitledTitle : title, font: titleFont, color: black))
     writer.space(PDFLayout.titleGap)
 
     for (offset, step) in tutorial.steps.enumerated() {
-        let heading = TextBlock("步骤 \(offset + 1)", font: headingFont, color: black)
+        let heading = TextBlock(lang.stepHeading(offset + 1), font: headingFont, color: black)
         let text = step.description.trimmingCharacters(in: .whitespacesAndNewlines)
         let body = text.isEmpty ? nil : TextBlock(text, font: bodyFont, color: gray)
         let image = try pdfImage(for: step)
