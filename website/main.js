@@ -2,30 +2,57 @@
 (() => {
   "use strict";
 
+  // ---------- Tip jar: fill these in to show the "buy me a coffee" block ----------
+  const SUPPORT = {
+    url: "",        // e.g. https://buymeacoffee.com/<name> or https://ko-fi.com/<name>
+    wechatQR: "",   // e.g. img/wechat-pay.png
+    alipayQR: "",   // e.g. img/alipay.png
+  };
+  (function setUpSupport() {
+    const box = document.querySelector(".coffee");
+    if (!box || !(SUPPORT.url || SUPPORT.wechatQR || SUPPORT.alipayQR)) return;
+    const link = box.querySelector(".coffee-link");
+    if (SUPPORT.url) { link.href = SUPPORT.url; link.hidden = false; }
+    [["wechatQR", ".qr-wechat"], ["alipayQR", ".qr-alipay"]].forEach(([key, sel]) => {
+      if (!SUPPORT[key]) return;
+      const fig = box.querySelector(sel);
+      fig.querySelector("img").src = SUPPORT[key];
+      fig.hidden = false;
+    });
+    box.hidden = false;
+    document.querySelectorAll(".coffee-nav").forEach((a) => (a.hidden = false));
+  })();
+
+  // ---------- Nav turns solid once it leaves the gradient hero ----------
+  const nav = document.querySelector(".nav");
+  const hero = document.querySelector(".hero");
+  const updateNav = () => nav && hero && nav.classList.toggle("solid", scrollY > hero.offsetHeight - 90);
+  addEventListener("scroll", updateNav, { passive: true });
+  updateNav();
+
   // ---------- i18n ----------
   // Chinese lives in the HTML; English replaces it on demand.
   const EN = {
     "nav.how": "How it works", "nav.parts": "Features", "nav.install": "Install", "nav.faq": "FAQ",
-    "cover.kicker": "ClickDoc · Owner's manual · 1st edition",
+    "hero.badge": "Free & open source · macOS menu bar app",
     "cover.title": "Click through it once.<br>The guide <em>writes itself</em>.",
     "cover.lede": "Use your Mac as usual. ClickDoc screenshots every click, circles where you clicked and drafts each step. Tidy it up, then export to Markdown, Notion or PDF.",
-    "cta.download": "Download for macOS", "cta.source": "View source →",
-    "cta.spec": "Free & open source · macOS 14+ · Apple silicon & Intel",
-    "fig1.caption": "Recording: every click → one step",
+    "cta.download": "Download for macOS", "cta.github": "Source on GitHub",
+    "cta.spec": "macOS 14+ · Apple silicon & Intel",
+    "doc.title": "How to change the system language",
     "demo.title": "System Settings", "demo.wifi": "Wi‑Fi", "demo.bt": "Bluetooth", "demo.general": "General",
     "demo.display": "Displays", "demo.privacy": "Privacy & Security", "demo.name": "Name", "demo.lang": "Language",
     "demo.chinese": "English", "demo.date": "Date & Time", "demo.done": "Done",
     "demo.step1": "Click “General” in System Settings",
     "demo.step2": "Click “English” in System Settings",
     "demo.step3": "Click “Done” in System Settings",
-    "how.title": "A guide in three steps",
+    "how.eyebrow": "How it works", "how.title": "A guide in three steps",
     "how.menu.start": "Start Recording", "how.menu.scope": "Capture Area ›", "how.menu.editor": "Open Editor",
     "how.1.title": "Record", "how.1.body": "Hit Start Recording in the menu bar and work as usual. Every click becomes a step: screenshot, red circle and caption in one go.",
     "how.edit.label": "Click here",
     "how.2.title": "Edit", "how.2.body": "Reword, reorder or bulk-delete steps. Point things out with arrows, boxes and text, and blur emails, keys and anything private.",
     "how.3.title": "Export", "how.3.body": "Export a Markdown folder, a Notion import package or a paginated A4 PDF. Blur and annotations are burned into the images.",
-    "parts.title": "Parts list", "parts.aside": "Everything ClickDoc does.",
-    "parts.no": "No.", "parts.part": "Part", "parts.desc": "Description",
+    "feat.eyebrow": "Features", "parts.title": "Everything you need, nothing you don't",
     "p1.t": "Click capture", "p1.d": "Screenshots every click and circles the spot in red. Double-clicks merge into one step; right-clicks count too.",
     "p2.t": "Window-only capture", "p2.d": "Crops to the window you clicked, keeping any menu it opened. Switch to the whole screen any time.",
     "p3.t": "Steps written for you", "p3.d": "Reads button and menu names to write captions like <q>Click <q>New Tab</q> in Safari</q>.",
@@ -35,7 +62,7 @@
     "p7.t": "Three exports", "p7.d": "Markdown folder, Notion import package (.zip) and paginated A4 PDF.",
     "p8.t": "Fully local", "p8.d": "No account, no network, no uploads. All source code is public.",
     "p9.t": "Chinese & English", "p9.d": "Follows your system language, and so do the generated captions.",
-    "install.title": "Install", "install.aside": "About 2 minutes.",
+    "install.eyebrow": "Install · about 2 minutes", "install.title": "Install",
     "i1.t": "Download and drag to Applications",
     "i1.d": "Open <a href=\"https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg\">ClickDoc.dmg</a> and drag ClickDoc onto the Applications folder.",
     "i2.t": "Let macOS open it",
@@ -44,10 +71,10 @@
     "i2.alt": "Prefer not to use Terminal? Open ClickDoc once, then click “Open Anyway” at the bottom of System Settings › Privacy & Security.",
     "i3.t": "Grant two permissions",
     "i3.d": "The first time you click Start Recording, turn on Accessibility and Screen Recording in System Settings › Privacy & Security, then reopen ClickDoc.",
-    "warn.label": "Note", "warn.body": "ClickDoc has no Dock icon. Once it's running, look for the round icon in the menu bar.",
-    "faq.title": "Troubleshooting & FAQ",
+    "warn.body": "ClickDoc has no Dock icon. Once it's running, look for the round icon in the menu bar.",
+    "faq.title": "Frequently asked questions",
     "q1": "macOS says it “can't verify the developer” or that the app “is damaged”",
-    "a1": "That's how macOS treats every un-notarized app; the file is fine. ClickDoc is a personal open-source project without paid notarization. Run the command in § 03 step 2 once.",
+    "a1": "That's how macOS treats every un-notarized app; the file is fine. ClickDoc is a personal open-source project without paid notarization. Run the command from install step 2 once.",
     "q2": "Are my screenshots uploaded?", "a2": "No. Recording, editing and exporting all happen on your Mac. The app has no network features and needs no account.",
     "q3": "Why Accessibility and Screen Recording?", "a3": "Accessibility lets ClickDoc notice clicks and read button names; Screen Recording lets it take screenshots. It needs both.",
     "q4": "Do I need to grant access again after updating?", "a4": "Possibly. If an old ClickDoc is still listed under Accessibility, remove it with “−” and grant access again.",
@@ -55,7 +82,9 @@
     "q7": "How is it different from Folge?",
     "a7": "Same idea: record clicks, get a step-by-step guide. Folge does more, such as Word and PowerPoint export, AI-written captions and brand templates, and its full version is a one-time $89. ClickDoc is lighter, entirely free and open source, has a Chinese UI and exports a Notion import package. ClickDoc is not affiliated with Folge.",
     "q6": "Found a bug or have an idea?", "a6": "Tell us on <a href=\"https://github.com/ibeeger/clickdoc/issues\" rel=\"noopener\">GitHub Issues</a>.",
-    "footer.end": "— End of manual —", "footer.feedback": "Feedback",
+    "closing.title": "Your next guide is one click-through away", "footer.feedback": "Feedback",
+    "coffee.title": "Enjoying ClickDoc?", "coffee.body": "It's free and always will be. If it saved you some time, you can buy me a coffee.",
+    "coffee.button": "Buy me a coffee", "coffee.wechat": "WeChat Pay", "coffee.alipay": "Alipay",
   };
   const TITLE = { zh: document.title, en: "ClickDoc · Click through it once. The guide writes itself." };
 
