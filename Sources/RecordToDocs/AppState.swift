@@ -20,6 +20,8 @@ final class AppState: ObservableObject {
     private var stepInfo: [UUID: ElementInfo] = [:]
     /// Where and when the most recent step's click happened.
     private var lastStepClick: (location: CGPoint, time: Date)?
+    /// Decoded screenshots, so list scrolling does not re-decode PNGs.
+    private var imageCache: [UUID: NSImage] = [:]
 
     func show(window id: String) {
         NSApp.activate(ignoringOtherApps: true)
@@ -131,7 +133,66 @@ final class AppState: ObservableObject {
         }
         tutorial = Tutorial()
         stepInfo = [:]
+        imageCache = [:]
         lastStepClick = nil
         hasUnexportedChanges = false
+    }
+
+    // MARK: - Editing
+
+    func image(for step: Step) -> NSImage {
+        if let cached = imageCache[step.id] { return cached }
+        let image = NSImage(data: step.pngData) ?? NSImage()
+        imageCache[step.id] = image
+        return image
+    }
+
+    func setTitle(_ title: String) {
+        tutorial.title = title
+        hasUnexportedChanges = true
+    }
+
+    func setDescription(id: UUID, to text: String) {
+        tutorial.updateDescription(id: id, to: text)
+        hasUnexportedChanges = true
+    }
+
+    func moveSteps(fromOffsets source: IndexSet, toOffset destination: Int) {
+        tutorial.move(fromOffsets: source, toOffset: destination)
+        hasUnexportedChanges = true
+        lastStepClick = nil  // the last step may have changed; never double-click-upgrade a moved step
+    }
+
+    func deleteStep(id: UUID) {
+        tutorial.remove(id: id)
+        stepInfo[id] = nil
+        imageCache[id] = nil
+        hasUnexportedChanges = true
+        lastStepClick = nil
+    }
+
+    // MARK: - Export
+
+    func export() {
+        guard !tutorial.isEmpty else { return }
+        NSApp.activate(ignoringOtherApps: true)
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.prompt = "导出到此处"
+        panel.message = "选择导出位置，将在其中新建一个以教程标题命名的文件夹"
+        guard panel.runModal() == .OK, let directory = panel.url else { return }
+        do {
+            let folder = try exportTutorial(tutorial, to: directory)
+            hasUnexportedChanges = false
+            NSWorkspace.shared.activateFileViewerSelecting([folder])
+        } catch {
+            let alert = NSAlert(error: error)
+            alert.messageText = "导出失败"
+            alert.informativeText = error.localizedDescription
+            alert.runModal()
+        }
     }
 }

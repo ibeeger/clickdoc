@@ -9,7 +9,7 @@ struct RecordToDocsApp: App {
             MenuContent().environmentObject(state)
         }
         Window("编辑教程", id: "editor") {
-            Text("编辑器").frame(minWidth: 400, minHeight: 300).environmentObject(state)
+            EditorView().environmentObject(state)
         }
         Window("需要权限", id: "permissions") {
             PermissionView()
@@ -29,15 +29,18 @@ private struct MenuContent: View {
                 Divider()
             }
             if state.isRecording {
-                Button("停止录制") { state.stopRecording() }
+                Button("停止录制") { inject(); state.stopRecording() }
             } else {
-                Button("开始录制") { state.startRecording() }
+                Button("开始录制") { inject(); state.startRecording() }
             }
-            Button("打开编辑器") { state.show(window: "editor") }
+            Button("打开编辑器") { inject(); state.show(window: "editor") }
             Button("新建教程") { state.newTutorial() }
             Divider()
             Button("退出") { NSApp.terminate(nil) }
         }
-        .onAppear { state.openWindowAction = openWindow }
+        .onAppear(perform: inject)
     }
+
+    /// Menu-style MenuBarExtra content may never get onAppear, so inject on every action too.
+    private func inject() { state.openWindowAction = openWindow }
 }
