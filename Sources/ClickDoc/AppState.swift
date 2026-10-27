@@ -299,11 +299,14 @@ final class AppState: ObservableObject {
         lastStepClick = nil  // the last step may have changed; never double-click-upgrade a moved step
     }
 
-    func deleteStep(id: UUID) {
-        tutorial.remove(id: id)
-        stepInfo[id] = nil
-        thumbnailCache[id] = nil
-        if fullImageCache?.id == id { fullImageCache = nil }
+    func deleteSteps(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        tutorial.remove(ids: ids)
+        for id in ids {
+            stepInfo[id] = nil
+            thumbnailCache[id] = nil
+        }
+        if let cached = fullImageCache, ids.contains(cached.id) { fullImageCache = nil }
         hasUnexportedChanges = true
         lastStepClick = nil
     }

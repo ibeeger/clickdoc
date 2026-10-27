@@ -39,6 +39,10 @@ public struct Tutorial: Equatable {
         steps.removeAll { $0.id == id }
     }
 
+    public mutating func remove(ids: Set<UUID>) {
+        steps.removeAll { ids.contains($0.id) }
+    }
+
     /// Same semantics as SwiftUI's `Array.move(fromOffsets:toOffset:)`.
     public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
         let moving = source.map { steps[$0] }
@@ -66,4 +70,17 @@ public struct Tutorial: Equatable {
         guard !steps.isEmpty else { return }
         transform(&steps[steps.count - 1])
     }
+}
+
+/// Steps a "delete" on `clicked` applies to: the whole selection if the row is part of it.
+public func deletionTargets(clicked: UUID, selection: Set<UUID>) -> Set<UUID> {
+    selection.contains(clicked) ? selection : [clicked]
+}
+
+/// The step to select after deleting `ids`: the first survivor after the first deleted step,
+/// otherwise the last survivor before it.
+public func selectionAfterDeleting(_ ids: Set<UUID>, from steps: [Step]) -> UUID? {
+    guard let first = steps.firstIndex(where: { ids.contains($0.id) }) else { return nil }
+    if let after = steps[first...].first(where: { !ids.contains($0.id) }) { return after.id }
+    return steps[..<first].last(where: { !ids.contains($0.id) })?.id
 }

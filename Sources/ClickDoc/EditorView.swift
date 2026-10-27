@@ -5,7 +5,9 @@ import RecordCore
 struct EditorView: View {
     @EnvironmentObject var state: AppState
     @Environment(\.openWindow) private var openWindow
-    @State private var selection: UUID?
+    @State private var selection: Set<UUID> = []
+    /// Steps waiting for the user to confirm a multi-step delete.
+    @State private var pendingDelete: Set<UUID>?
     @State private var tool: EditorTool = .select
     @State private var selectedItem: CanvasItem?
 
@@ -43,6 +45,14 @@ struct EditorView: View {
         .frame(minWidth: 760, minHeight: 480)
         .onAppear { state.openWindowAction = openWindow }
         .onChange(of: selection) { selectedItem = nil }
+        .confirmationDialog("删除 \(pendingDelete?.count ?? 0) 个步骤？",
+                            isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
+                            presenting: pendingDelete) { ids in
+            Button("删除", role: .destructive) { performDelete(ids) }
+            Button("取消", role: .cancel) {}
+        } message: { _ in
+            Text("删除后无法恢复。")
+        }
     }
 
     private var stepList: some View {
@@ -50,14 +60,24 @@ struct EditorView: View {
             ForEach(Array(state.tutorial.steps.enumerated()), id: \.element.id) { index, step in
                 StepRow(index: index + 1, step: step)
                     .tag(step.id)
-                    .contextMenu { Button("删除") { delete(step.id) } }
+                    .contextMenu {
+                        let targets = deletionTargets(clicked: step.id, selection: selection)
+                        Button(targets.count > 1 ? "删除所选的 \(targets.count) 个步骤" : "删除") { requestDelete(targets) }
+                        Divider()
+                        Button("全选") { selectAll() }
+                    }
             }
             .onMove { state.moveSteps(fromOffsets: $0, toOffset: $1) }
             .onDelete { offsets in
-                offsets.map { state.tutorial.steps[$0].id }.forEach(delete)
+                requestDelete(Set(offsets.map { state.tutorial.steps[$0].id }))
             }
         }
-        .onDeleteCommand { if let id = selection { delete(id) } }
+        .onDeleteCommand { requestDelete(selection) }
+        .onKeyPress(keys: ["a"]) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            selectAll()
+            return .handled
+        }
         .overlay {
             if state.tutorial.isEmpty {
                 Text("还没有步骤。从菜单栏开始录制。")
@@ -70,7 +90,17 @@ struct EditorView: View {
 
     @ViewBuilder
     private var detail: some View {
-        if let id = selection, let step = state.tutorial.steps.first(where: { $0.id == id }) {
+        if selection.count > 1 {
+            VStack(spacing: 12) {
+                Text("已选择 \(selection.count) 个步骤").font(.title3)
+                Button(role: .destructive) { requestDelete(selection) } label: {
+                    Label("删除这 \(selection.count) 个步骤", systemImage: "trash")
+                }
+                Text("按住 ⌘ 点选多个，按住 ⇧ 连续选择，⌘A 全选")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } else if let id = selection.first, let step = state.tutorial.steps.first(where: { $0.id == id }) {
             VStack(alignment: .leading, spacing: 12) {
                 markupTools(step)
                 AnnotationCanvas(image: state.fullImage(for: step), blurRegions: step.blurRegions,
@@ -138,9 +168,21 @@ struct EditorView: View {
                 set: { state.setDescription(id: id, to: $0) })
     }
 
-    private func delete(_ id: UUID) {
-        if selection == id { selection = nil }
-        state.deleteStep(id: id)
+    private func selectAll() {
+        selection = Set(state.tutorial.steps.map(\.id))
+    }
+
+    /// Deleting several steps asks first; there is no undo.
+    private func requestDelete(_ ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        if ids.count > 1 { pendingDelete = ids } else { performDelete(ids) }
+    }
+
+    private func performDelete(_ ids: Set<UUID>) {
+        let next = selectionAfterDeleting(ids, from: state.tutorial.steps)
+        state.deleteSteps(ids: ids)
+        selection = next.map { [$0] } ?? []
+        pendingDelete = nil
     }
 }
 
