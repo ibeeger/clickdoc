@@ -24,6 +24,10 @@ private struct MenuContent: View {
 
     var body: some View {
         Group {
+            if let error = state.lastError {
+                Text(error)
+                Divider()
+            }
             if state.isRecording {
                 Button("停止录制") { state.stopRecording() }
             } else {
