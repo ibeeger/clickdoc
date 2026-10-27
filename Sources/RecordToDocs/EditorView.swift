@@ -6,6 +6,8 @@ struct EditorView: View {
     @EnvironmentObject var state: AppState
     @Environment(\.openWindow) private var openWindow
     @State private var selection: UUID?
+    @State private var blurTool = false
+    @State private var selectedRegion: Int?
 
     var body: some View {
         NavigationSplitView {
@@ -32,6 +34,7 @@ struct EditorView: View {
         }
         .frame(minWidth: 760, minHeight: 480)
         .onAppear { state.openWindowAction = openWindow }
+        .onChange(of: selection) { selectedRegion = nil }
     }
 
     private var stepList: some View {
@@ -61,9 +64,11 @@ struct EditorView: View {
     private var detail: some View {
         if let id = selection, let step = state.tutorial.steps.first(where: { $0.id == id }) {
             VStack(alignment: .leading, spacing: 12) {
-                Image(nsImage: state.fullImage(for: step))
-                    .resizable()
-                    .scaledToFit()
+                blurTools(step)
+                BlurCanvas(image: state.fullImage(for: step), regions: step.blurRegions, editing: blurTool,
+                           selected: $selectedRegion,
+                           onCommit: { state.setBlurRegions(id: id, $0) })
+                    .id(id)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 Text("描述").font(.headline)
                 TextEditor(text: descriptionBinding(id))
@@ -75,6 +80,32 @@ struct EditorView: View {
             .padding()
         } else {
             Text("选择一个步骤").foregroundStyle(.secondary)
+        }
+    }
+
+    private func blurTools(_ step: Step) -> some View {
+        HStack(spacing: 8) {
+            Toggle(isOn: $blurTool) { Label("模糊", systemImage: "eye.slash") }
+                .toggleStyle(.button)
+            Button("删除选中区域") {
+                guard let i = selectedRegion, step.blurRegions.indices.contains(i) else { return }
+                var next = step.blurRegions
+                next.remove(at: i)
+                selectedRegion = nil
+                state.setBlurRegions(id: step.id, next)
+            }
+            .disabled(!blurTool || selectedRegion == nil)
+            Button("清除全部模糊") {
+                selectedRegion = nil
+                state.setBlurRegions(id: step.id, [])
+            }
+            .disabled(step.blurRegions.isEmpty)
+            if blurTool {
+                Text("在图上拖动框选要模糊的区域；拖动框可移动，拖右下角可调整大小，按 Delete 删除")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
         }
     }
 

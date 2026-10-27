@@ -174,6 +174,7 @@ final class AppState: ObservableObject {
     func thumbnail(for step: Step) -> NSImage {
         if let cached = thumbnailCache[step.id] { return cached }
         let image = thumbnailImage(fromPNG: step.pngData, maxPixelSize: 240)
+            .flatMap { applyBlur(to: $0, regions: step.blurRegions) }
             .map { NSImage(cgImage: $0, size: .zero) } ?? NSImage()
         thumbnailCache[step.id] = image
         return image
@@ -193,6 +194,12 @@ final class AppState: ObservableObject {
 
     func setDescription(id: UUID, to text: String) {
         tutorial.updateDescription(id: id, to: text)
+        hasUnexportedChanges = true
+    }
+
+    func setBlurRegions(id: UUID, _ regions: [CGRect]) {
+        tutorial.setBlurRegions(id: id, regions)
+        thumbnailCache[id] = nil
         hasUnexportedChanges = true
     }
 
