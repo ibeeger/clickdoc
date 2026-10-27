@@ -2,26 +2,12 @@
 (() => {
   "use strict";
 
-  // ---------- Tip jar: fill these in to show the "buy me a coffee" block ----------
-  const SUPPORT = {
-    url: "",        // e.g. https://buymeacoffee.com/<name> or https://ko-fi.com/<name>
-    wechatQR: "",   // e.g. img/wechat-pay.png
-    alipayQR: "",   // e.g. img/alipay.png
-  };
-  (function setUpSupport() {
-    const box = document.querySelector(".coffee");
-    if (!box || !(SUPPORT.url || SUPPORT.wechatQR || SUPPORT.alipayQR)) return;
-    const link = box.querySelector(".coffee-link");
-    if (SUPPORT.url) { link.href = SUPPORT.url; link.hidden = false; }
-    [["wechatQR", ".qr-wechat"], ["alipayQR", ".qr-alipay"]].forEach(([key, sel]) => {
-      if (!SUPPORT[key]) return;
-      const fig = box.querySelector(sel);
-      fig.querySelector("img").src = SUPPORT[key];
-      fig.hidden = false;
-    });
-    box.hidden = false;
-    document.querySelectorAll(".coffee-nav").forEach((a) => (a.hidden = false));
-  })();
+  // ---------- Sponsor: set once GitHub Sponsors is approved, e.g. "https://github.com/sponsors/ibeeger" ----------
+  const SPONSOR_URL = "";
+  if (SPONSOR_URL) {
+    document.querySelectorAll(".sponsor-link").forEach((a) => (a.href = SPONSOR_URL));
+    document.querySelectorAll(".sponsor, .sponsor-nav").forEach((el) => (el.hidden = false));
+  }
 
   // ---------- Nav turns solid once it leaves the gradient hero ----------
   const nav = document.querySelector(".nav");
@@ -83,8 +69,9 @@
     "a7": "Same idea: record clicks, get a step-by-step guide. Folge does more, such as Word and PowerPoint export, AI-written captions and brand templates, and its full version is a one-time $89. ClickDoc is lighter, entirely free and open source, has a Chinese UI and exports a Notion import package. ClickDoc is not affiliated with Folge.",
     "q6": "Found a bug or have an idea?", "a6": "Tell us on <a href=\"https://github.com/ibeeger/clickdoc/issues\" rel=\"noopener\">GitHub Issues</a>.",
     "closing.title": "Your next guide is one click-through away", "footer.feedback": "Feedback",
-    "coffee.title": "Enjoying ClickDoc?", "coffee.body": "It's free and always will be. If it saved you some time, you can buy me a coffee.",
-    "coffee.button": "Buy me a coffee", "coffee.wechat": "WeChat Pay", "coffee.alipay": "Alipay",
+    "sponsor.title": "Enjoying ClickDoc?", "sponsor.nav": "Sponsor",
+    "sponsor.body": "It's free and open source, and always will be. If it saved you some time, you can support its development through GitHub Sponsors.",
+    "sponsor.button": "Sponsor on GitHub",
   };
   const TITLE = { zh: document.title, en: "ClickDoc · Click through it once. The guide writes itself." };
 

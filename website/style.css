@@ -306,17 +306,12 @@ h1, h2, h3 { font-family: var(--display); letter-spacing: -0.02em; }
   html { scroll-behavior: auto; }
 }
 
-/* Buy me a coffee */
-.coffee { position: relative; max-width: 760px; margin: 0 auto; text-align: center; padding: 48px 28px 42px; border-radius: 30px; background: #fff; border: 1px solid var(--line); box-shadow: 0 24px 60px rgba(60, 70, 200, 0.10); }
-.coffee[hidden], .coffee [hidden], .coffee-nav[hidden] { display: none !important; }
-.cup { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 20px; font-size: 32px; background: linear-gradient(150deg, #fff4e6, #ffe2c2); box-shadow: 0 10px 24px rgba(255, 150, 60, 0.25); }
-.coffee h2 { margin: 18px 0 8px; font-size: clamp(26px, 3vw, 36px); }
-:lang(zh-CN) .coffee h2 { font-family: var(--sans); font-weight: 800; }
-.coffee p { margin: 0 auto 24px; max-width: 30em; color: var(--ink-soft); }
-.btn-coffee { background: #ffdd00; color: #1b1a17; box-shadow: 0 12px 26px rgba(255, 190, 0, 0.35); }
-.btn-coffee:hover { transform: translateY(-2px); }
-.qrs { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; margin-top: 26px; }
-.qrs:empty { display: none; }
-.qr { margin: 0; padding: 12px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
-.qr img { display: block; width: 160px; height: 160px; border-radius: 10px; background: #fff; }
-.qr figcaption { margin-top: 8px; font-size: 13px; color: var(--ink-soft); }
+/* Sponsor */
+.sponsor { max-width: 760px; margin: 0 auto; text-align: center; padding: 48px 28px 42px; border-radius: 30px; background: #fff; border: 1px solid var(--line); box-shadow: 0 24px 60px rgba(60, 70, 200, 0.10); }
+.sponsor[hidden], .sponsor-nav[hidden] { display: none !important; }
+.heart { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 20px; font-size: 30px; color: #fff; background: linear-gradient(150deg, #ff7aa8, #db2777); box-shadow: 0 10px 24px rgba(219, 39, 119, 0.3); }
+.sponsor h2 { margin: 18px 0 8px; font-size: clamp(26px, 3vw, 36px); }
+:lang(zh-CN) .sponsor h2 { font-family: var(--sans); font-weight: 800; }
+.sponsor p { margin: 0 auto 24px; max-width: 30em; color: var(--ink-soft); }
+.btn-sponsor { background: #fff; color: #bf3989; border: 1px solid #f3c6dc; box-shadow: 0 10px 24px rgba(191, 57, 137, 0.15); }
+.btn-sponsor:hover { transform: translateY(-2px); background: #fff5fa; }
