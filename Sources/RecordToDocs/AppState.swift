@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 import RecordCore
 
@@ -20,6 +21,55 @@ final class AppState: ObservableObject {
     private var stepInfo: [UUID: ElementInfo] = [:]
     /// Where and when the most recent step's click happened.
     private var lastStepClick: (location: CGPoint, time: Date)?
+    private let draftStore = DraftStore.standard()
+    /// Serializes draft writes off the main thread.
+    private let saveQueue = DispatchQueue(label: "RecordToDocs.draft-save")
+    private var cancellables: Set<AnyCancellable> = []
+
+    init() {
+        restoreDraft()
+        Publishers.CombineLatest($tutorial, $hasUnexportedChanges)
+            .dropFirst()
+            .debounce(for: .milliseconds(400), scheduler: RunLoop.main)
+            .sink { [weak self] tutorial, dirty in self?.saveDraft(tutorial, dirty: dirty) }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                let store = draftStore, tutorial = tutorial, dirty = hasUnexportedChanges
+                saveQueue.sync { try? store.save(tutorial, hasUnexportedChanges: dirty) }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func restoreDraft() {
+        do {
+            if let draft = try draftStore.load() {
+                tutorial = draft.tutorial
+                hasUnexportedChanges = draft.hasUnexportedChanges
+            }
+        } catch {
+            // Keep the unreadable draft for manual recovery instead of overwriting it.
+            let aside = draftStore.directory.deletingLastPathComponent()
+                .appendingPathComponent("draft-unreadable-\(Int(Date().timeIntervalSince1970))")
+            try? FileManager.default.moveItem(at: draftStore.directory, to: aside)
+            lastError = "上次的草稿无法读取，已另存到 \(aside.path)"
+        }
+    }
+
+    private func saveDraft(_ tutorial: Tutorial, dirty: Bool) {
+        let store = draftStore
+        saveQueue.async {
+            do {
+                try store.save(tutorial, hasUnexportedChanges: dirty)
+            } catch {
+                DispatchQueue.main.async { [weak self] in
+                    self?.lastError = "自动保存草稿失败：\(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
     /// Small decoded thumbnails per step; full-size images are never cached for the list.
     private var thumbnailCache: [UUID: NSImage] = [:]
     /// Only the most recently viewed full-size image is kept.
