@@ -9,6 +9,8 @@ public struct Step: Identifiable, Equatable {
     /// Areas to blur, normalized to the image (0...1, top-left origin). Applied on display and export;
     /// `pngData` always keeps the unblurred screenshot so regions stay editable.
     public var blurRegions: [CGRect] = []
+    /// Boxes, arrows and text drawn above the blur, also kept separate from `pngData`.
+    public var annotations: [Annotation] = []
 
     public init(id: UUID = UUID(), description: String, pngData: Data, capturedAt: Date = Date()) {
         self.id = id
@@ -53,6 +55,11 @@ public struct Tutorial: Equatable {
     public mutating func setBlurRegions(id: UUID, _ regions: [CGRect]) {
         guard let i = steps.firstIndex(where: { $0.id == id }) else { return }
         steps[i].blurRegions = regions
+    }
+
+    public mutating func setAnnotations(id: UUID, _ annotations: [Annotation]) {
+        guard let i = steps.firstIndex(where: { $0.id == id }) else { return }
+        steps[i].annotations = annotations
     }
 
     public mutating func updateLastStep(_ transform: (inout Step) -> Void) {

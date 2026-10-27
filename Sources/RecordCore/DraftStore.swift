@@ -39,6 +39,8 @@ public struct DraftStore {
         var description: String
         var capturedAt: Date
         var blurRegions: [CGRect]
+        /// Absent in drafts written before annotations existed.
+        var annotations: [Annotation]?
     }
 
     private var manifestURL: URL { directory.appendingPathComponent("manifest.json") }
@@ -54,7 +56,8 @@ public struct DraftStore {
         let manifest = Manifest(title: tutorial.title, hasUnexportedChanges: hasUnexportedChanges,
                                 steps: tutorial.steps.map {
                                     StepRecord(id: $0.id, description: $0.description,
-                                               capturedAt: $0.capturedAt, blurRegions: $0.blurRegions)
+                                               capturedAt: $0.capturedAt, blurRegions: $0.blurRegions,
+                                               annotations: $0.annotations)
                                 })
         // Manifest last: a crash mid-save leaves the previous manifest pointing at existing images.
         try JSONEncoder().encode(manifest).write(to: manifestURL, options: .atomic)
@@ -73,6 +76,7 @@ public struct DraftStore {
             guard let png = try? Data(contentsOf: imageURL(record.id)) else { continue }
             var step = Step(id: record.id, description: record.description, pngData: png, capturedAt: record.capturedAt)
             step.blurRegions = record.blurRegions
+            step.annotations = record.annotations ?? []
             tutorial.append(step)
         }
         return (tutorial, manifest.hasUnexportedChanges)

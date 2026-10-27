@@ -54,12 +54,17 @@ public enum ExportError: LocalizedError {
     public var errorDescription: String? { "处理截图失败" }
 }
 
-/// The PNG bytes written on export: the screenshot with its blur regions burned in.
+/// The screenshot as readers see it: blur first, then annotations on top.
+public func composeStepImage(_ image: CGImage, step: Step) -> CGImage? {
+    applyBlur(to: image, regions: step.blurRegions).flatMap { renderAnnotations(on: $0, step.annotations) }
+}
+
+/// The PNG bytes written on export: the screenshot with its blur and annotations burned in.
 public func exportImageData(for step: Step) throws -> Data {
-    guard !step.blurRegions.isEmpty else { return step.pngData }
+    guard !step.blurRegions.isEmpty || !step.annotations.isEmpty else { return step.pngData }
     guard let source = CGImageSourceCreateWithData(step.pngData as CFData, nil),
           let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
-          let blurred = applyBlur(to: image, regions: step.blurRegions),
-          let data = pngData(from: blurred) else { throw ExportError.imageProcessingFailed }
+          let composed = composeStepImage(image, step: step),
+          let data = pngData(from: composed) else { throw ExportError.imageProcessingFailed }
     return data
 }
