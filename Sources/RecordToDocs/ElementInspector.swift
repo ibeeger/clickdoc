@@ -1,5 +1,6 @@
 import AppKit
 import ApplicationServices
+import RecordCore
 
 struct ElementInfo {
     let pid: pid_t?
@@ -27,19 +28,14 @@ enum ElementInspector {
         return ElementInfo(pid: hasPid ? pid : nil, appName: app, elementName: name(of: element))
     }
 
-    private static let nameAttributes = [kAXTitleAttribute, kAXDescriptionAttribute, kAXValueAttribute, kAXHelpAttribute]
-
     private static func name(of element: AXUIElement) -> String? {
-        for attr in nameAttributes {
-            if let s = string(element, attr) { return s }
-        }
-        // Labels often sit on the enclosing control (e.g. text inside a button).
-        if let parent = parentOf(element) {
-            for attr in [kAXTitleAttribute, kAXDescriptionAttribute] {
-                if let s = string(parent, attr) { return s }
-            }
-        }
-        return string(element, kAXRoleDescriptionAttribute)
+        pickElementName(fields(of: element), parent: parentOf(element).map(fields(of:)))
+    }
+
+    private static func fields(of e: AXUIElement) -> AXFields {
+        AXFields(role: string(e, kAXRoleAttribute), title: string(e, kAXTitleAttribute),
+                 description: string(e, kAXDescriptionAttribute), value: string(e, kAXValueAttribute),
+                 help: string(e, kAXHelpAttribute), roleDescription: string(e, kAXRoleDescriptionAttribute))
     }
 
     private static func parentOf(_ element: AXUIElement) -> AXUIElement? {

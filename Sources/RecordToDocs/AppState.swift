@@ -20,8 +20,10 @@ final class AppState: ObservableObject {
     private var stepInfo: [UUID: ElementInfo] = [:]
     /// Where and when the most recent step's click happened.
     private var lastStepClick: (location: CGPoint, time: Date)?
-    /// Decoded screenshots, so list scrolling does not re-decode PNGs.
-    private var imageCache: [UUID: NSImage] = [:]
+    /// Small decoded thumbnails per step; full-size images are never cached for the list.
+    private var thumbnailCache: [UUID: NSImage] = [:]
+    /// Only the most recently viewed full-size image is kept.
+    private var fullImageCache: (id: UUID, image: NSImage)?
 
     func show(window id: String) {
         NSApp.activate(ignoringOtherApps: true)
@@ -62,30 +64,55 @@ final class AppState: ObservableObject {
     // MARK: - Recording pipeline
 
     private func receive(_ click: RawClick) {
+        // Decide about our own UI first: running AX against our own (busy) main thread would stall.
+        let windows = Self.windowSnapshots()
+        if isOwnUI(at: click.location, windows: windows) { return }
         // Inspect synchronously, before the clicked app reacts and changes its UI.
-        let info = ElementInspector.inspect(at: click.location)
-        if isOwnUI(info: info, at: click.location) { return }
+        let inspected = ElementInspector.inspect(at: click.location)
+        let appName = inspected.appName
+            ?? topmostWindow(at: click.location, in: windows)?.ownerName
+            ?? NSWorkspace.shared.frontmostApplication?.localizedName
+        let info = ElementInfo(pid: inspected.pid, appName: appName, elementName: inspected.elementName)
+        // Start the screenshot now so it reflects this click, not later ones; only appending is serialized.
+        let needsCapture = !(click.button == .left && click.clickCount >= 3)
+        let capturer = capturer
+        let capture: Task<Data, Error>? = needsCapture
+            ? Task { try await capturer.highlightedPNG(for: click.location) }
+            : nil
         let previous = chain
         chain = Task { @MainActor [weak self] in
             await previous?.value
-            await self?.process(click, info)
+            await self?.process(click, info, capture)
         }
     }
 
-    private func isOwnUI(info: ElementInfo, at point: CGPoint) -> Bool {
-        let me = getpid()
-        if info.pid == me { return true }
-        guard let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] else {
-            return false
+    private static func windowSnapshots() -> [WindowSnapshot] {
+        guard let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] else {
+            return []
         }
-        // Front-to-back order: the first window containing the point is the one clicked.
-        for w in windows {
+        return list.compactMap { w in
             guard let dict = w[kCGWindowBounds as String] as? NSDictionary,
-                  let bounds = CGRect(dictionaryRepresentation: dict), bounds.contains(point) else { continue }
-            if (w[kCGWindowAlpha as String] as? Double ?? 1) == 0 { continue }
-            return (w[kCGWindowOwnerPID as String] as? pid_t) == me
+                  let bounds = CGRect(dictionaryRepresentation: dict),
+                  let pid = w[kCGWindowOwnerPID as String] as? pid_t else { return nil }
+            return WindowSnapshot(bounds: bounds, ownerPID: pid,
+                                  ownerName: w[kCGWindowOwnerName as String] as? String,
+                                  alpha: w[kCGWindowAlpha as String] as? Double ?? 1,
+                                  layer: w[kCGWindowLayer as String] as? Int ?? 0,
+                                  number: w[kCGWindowNumber as String] as? Int ?? 0)
         }
-        return false
+    }
+
+    private func isOwnUI(at point: CGPoint, windows: [WindowSnapshot]) -> Bool {
+        let me = getpid()
+        // The window a mouse-down actually hits; respects click-through overlays (ignoresMouseEvents).
+        let mainHeight = CGDisplayBounds(CGMainDisplayID()).height
+        let hit = NSWindow.windowNumber(at: cocoaPoint(fromGlobal: point, mainDisplayHeight: mainHeight),
+                                        belowWindowWithWindowNumber: 0)
+        if hit > 0 {
+            if NSApp.windows.contains(where: { $0.windowNumber == hit }) { return true }
+            if let owner = windows.first(where: { $0.number == hit }) { return owner.ownerPID == me }
+        }
+        return topmostWindow(at: point, in: windows)?.ownerPID == me
     }
 
     /// A second click may only upgrade the previous step if it landed on the same spot moments later.
@@ -95,12 +122,14 @@ final class AppState: ObservableObject {
         return dx * dx + dy * dy <= 25 && click.timestamp.timeIntervalSince(last.time) <= max(NSEvent.doubleClickInterval, 0.5) + 0.2
     }
 
-    private func process(_ click: RawClick, _ info: ElementInfo) async {
+    private func process(_ click: RawClick, _ info: ElementInfo, _ capture: Task<Data, Error>?) async {
         switch decideStep(button: click.button, clickCount: click.clickCount,
                           hasPreviousStep: canUpgradeLastStep(with: click)) {
         case .ignore:
+            capture?.cancel()
             return
         case .upgradeLastToDoubleClick:
+            capture?.cancel()
             guard let last = tutorial.steps.last else { return }
             let i = stepInfo[last.id]
             tutorial.updateLastStep {
@@ -109,7 +138,8 @@ final class AppState: ObservableObject {
             lastStepClick = nil
         case .newStep(let action):
             do {
-                let png = try await capturer.highlightedPNG(for: click.location)
+                guard let capture else { throw CaptureError.renderFailed }
+                let png = try await capture.value
                 let step = Step(description: describeStep(action: action, appName: info.appName, elementName: info.elementName),
                                 pngData: png, capturedAt: click.timestamp)
                 tutorial.append(step)
@@ -133,17 +163,26 @@ final class AppState: ObservableObject {
         }
         tutorial = Tutorial()
         stepInfo = [:]
-        imageCache = [:]
+        thumbnailCache = [:]
+        fullImageCache = nil
         lastStepClick = nil
         hasUnexportedChanges = false
     }
 
     // MARK: - Editing
 
-    func image(for step: Step) -> NSImage {
-        if let cached = imageCache[step.id] { return cached }
+    func thumbnail(for step: Step) -> NSImage {
+        if let cached = thumbnailCache[step.id] { return cached }
+        let image = thumbnailImage(fromPNG: step.pngData, maxPixelSize: 240)
+            .map { NSImage(cgImage: $0, size: .zero) } ?? NSImage()
+        thumbnailCache[step.id] = image
+        return image
+    }
+
+    func fullImage(for step: Step) -> NSImage {
+        if let cached = fullImageCache, cached.id == step.id { return cached.image }
         let image = NSImage(data: step.pngData) ?? NSImage()
-        imageCache[step.id] = image
+        fullImageCache = (step.id, image)
         return image
     }
 
@@ -166,7 +205,8 @@ final class AppState: ObservableObject {
     func deleteStep(id: UUID) {
         tutorial.remove(id: id)
         stepInfo[id] = nil
-        imageCache[id] = nil
+        thumbnailCache[id] = nil
+        if fullImageCache?.id == id { fullImageCache = nil }
         hasUnexportedChanges = true
         lastStepClick = nil
     }

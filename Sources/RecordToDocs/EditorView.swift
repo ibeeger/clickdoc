@@ -61,12 +61,13 @@ struct EditorView: View {
     private var detail: some View {
         if let id = selection, let step = state.tutorial.steps.first(where: { $0.id == id }) {
             VStack(alignment: .leading, spacing: 12) {
-                Image(nsImage: state.image(for: step))
+                Image(nsImage: state.fullImage(for: step))
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 Text("描述").font(.headline)
                 TextEditor(text: descriptionBinding(id))
+                    .id(id)  // fresh editor per step, so text never carries over between selections
                     .font(.body)
                     .frame(height: 80)
                     .overlay(RoundedRectangle(cornerRadius: 6).stroke(.quaternary))
@@ -99,7 +100,7 @@ private struct StepRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(nsImage: state.image(for: step))
+            Image(nsImage: state.thumbnail(for: step))
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 48)

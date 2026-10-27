@@ -28,3 +28,14 @@ public func pngData(from image: CGImage) -> Data? {
     guard CGImageDestinationFinalize(dest) else { return nil }
     return data as Data
 }
+
+/// Downscaled decode of a PNG, so list thumbnails do not hold full-resolution bitmaps.
+public func thumbnailImage(fromPNG data: Data, maxPixelSize: Int) -> CGImage? {
+    guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+    let options: [CFString: Any] = [
+        kCGImageSourceCreateThumbnailFromImageAlways: true,
+        kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
+        kCGImageSourceCreateThumbnailWithTransform: true,
+    ]
+    return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+}
