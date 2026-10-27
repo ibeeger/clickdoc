@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 
 public func imageFileName(index: Int) -> String {
     String(format: "step-%02d.png", index)
@@ -42,8 +43,23 @@ public func exportTutorial(_ tutorial: Tutorial, to directory: URL, fileManager:
     let images = folder.appendingPathComponent("images", isDirectory: true)
     try fileManager.createDirectory(at: images, withIntermediateDirectories: true)
     for (offset, step) in tutorial.steps.enumerated() {
-        try step.pngData.write(to: images.appendingPathComponent(imageFileName(index: offset + 1)))
+        try exportImageData(for: step).write(to: images.appendingPathComponent(imageFileName(index: offset + 1)))
     }
     try renderMarkdown(tutorial).write(to: folder.appendingPathComponent("tutorial.md"), atomically: true, encoding: .utf8)
     return folder
+}
+
+public enum ExportError: LocalizedError {
+    case imageProcessingFailed
+    public var errorDescription: String? { "处理截图失败" }
+}
+
+/// The PNG bytes written on export: the screenshot with its blur regions burned in.
+public func exportImageData(for step: Step) throws -> Data {
+    guard !step.blurRegions.isEmpty else { return step.pngData }
+    guard let source = CGImageSourceCreateWithData(step.pngData as CFData, nil),
+          let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
+          let blurred = applyBlur(to: image, regions: step.blurRegions),
+          let data = pngData(from: blurred) else { throw ExportError.imageProcessingFailed }
+    return data
 }

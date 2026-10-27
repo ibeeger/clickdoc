@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 public struct Step: Identifiable, Equatable {
@@ -5,6 +6,9 @@ public struct Step: Identifiable, Equatable {
     public var description: String
     public var pngData: Data
     public let capturedAt: Date
+    /// Areas to blur, normalized to the image (0...1, top-left origin). Applied on display and export;
+    /// `pngData` always keeps the unblurred screenshot so regions stay editable.
+    public var blurRegions: [CGRect] = []
 
     public init(id: UUID = UUID(), description: String, pngData: Data, capturedAt: Date = Date()) {
         self.id = id
@@ -44,6 +48,11 @@ public struct Tutorial: Equatable {
     public mutating func updateDescription(id: UUID, to text: String) {
         guard let i = steps.firstIndex(where: { $0.id == id }) else { return }
         steps[i].description = text
+    }
+
+    public mutating func setBlurRegions(id: UUID, _ regions: [CGRect]) {
+        guard let i = steps.firstIndex(where: { $0.id == id }) else { return }
+        steps[i].blurRegions = regions
     }
 
     public mutating func updateLastStep(_ transform: (inout Step) -> Void) {
