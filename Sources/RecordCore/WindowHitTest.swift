@@ -32,11 +32,15 @@ public func cocoaPoint(fromGlobal point: CGPoint, mainDisplayHeight: CGFloat) ->
 
 /// Global rect (points) to crop a screenshot to the window that was clicked, or nil for the
 /// whole display (desktop, Dock, menu bar, or a window that nearly fills the screen).
-/// Popups of the same app near the window (menus, popovers) are included for context.
+/// The clicked window or popup, same-app popups near the window (menus, popovers) and room
+/// for the click highlight are always included. `hitWindowNumber` is the window the OS says
+/// received the click; it skips click-through overlays.
 public func captureCropRect(click: CGPoint, windows: [WindowSnapshot], displayFrame: CGRect,
-                            margin: CGFloat = 8, popupReach: CGFloat = 200) -> CGRect? {
+                            hitWindowNumber: Int? = nil, margin: CGFloat = 8, popupReach: CGFloat = 200,
+                            highlightReach: CGFloat = 32) -> CGRect? {
     let visible = windows.filter { $0.alpha > 0 }
-    guard let hit = visible.first(where: { $0.bounds.contains(click) }) else { return nil }
+    let osHit = hitWindowNumber.flatMap { n in visible.first { $0.number == n && $0.bounds.contains(click) } }
+    guard let hit = osHit ?? visible.first(where: { $0.bounds.contains(click) }) else { return nil }
     let base: WindowSnapshot
     if hit.layer == 0 {
         base = hit
@@ -45,13 +49,16 @@ public func captureCropRect(click: CGPoint, windows: [WindowSnapshot], displayFr
     } else {
         return nil
     }
+    var rect = base.bounds.union(hit.bounds)
     let reach = base.bounds.insetBy(dx: -popupReach, dy: -popupReach)
-    var rect = base.bounds
     for popup in visible where popup.ownerPID == base.ownerPID && popup.layer > 0 && popup.bounds.intersects(reach) {
         rect = rect.union(popup.bounds)
     }
+    rect = rect.union(CGRect(x: click.x - highlightReach, y: click.y - highlightReach,
+                             width: highlightReach * 2, height: highlightReach * 2))
     let clamped = rect.insetBy(dx: -margin, dy: -margin).intersection(displayFrame)
-    guard !clamped.isNull, clamped.width * clamped.height < displayFrame.width * displayFrame.height * 0.95 else {
+    guard !clamped.isNull, clamped.contains(click),
+          clamped.width * clamped.height < displayFrame.width * displayFrame.height * 0.95 else {
         return nil
     }
     return clamped

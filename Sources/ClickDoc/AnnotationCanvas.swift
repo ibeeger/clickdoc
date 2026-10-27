@@ -69,6 +69,8 @@ struct AnnotationCanvas: View {
     @State private var workingAnnotations: [Annotation]?
     @State private var textEdit: TextEdit?
     @State private var lastTap: (time: Date, point: CGPoint)?
+    /// Start of the drag that `mode` belongs to; a new start means the old drag was cancelled.
+    @State private var dragStart: CGPoint?
     @FocusState private var canvasFocused: Bool
     @FocusState private var textFocused: Bool
 
@@ -80,26 +82,42 @@ struct AnnotationCanvas: View {
         GeometryReader { geo in
             let fitted = fittedSize(in: geo.size)
             ZStack(alignment: .topLeading) {
-                Image(nsImage: image).resizable().frame(width: fitted.width, height: fitted.height)
-                blurLayer(fitted)
-                Canvas { ctx, size in drawAnnotations(in: &ctx, size: size) }
-                    .frame(width: fitted.width, height: fitted.height)
-                    .allowsHitTesting(false)
-                selectionLayer(fitted).allowsHitTesting(false)
+                drawingSurface(fitted)
                 if let edit = textEdit { textField(edit, fitted: fitted) }
             }
             .frame(width: fitted.width, height: fitted.height, alignment: .topLeading)
-            .contentShape(Rectangle())
-            .gesture(drag(fitted: fitted))
-            .focusable()
-            .focused($canvasFocused)
-            .focusEffectDisabled()
-            .onKeyPress(keys: [.delete, .deleteForward]) { _ in
-                guard textEdit == nil, selected != nil else { return .ignored }
-                deleteSelected()
-                return .handled
-            }
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
+        }
+        .onChange(of: annotations) {
+            // The annotation being edited was deleted from the toolbar: drop the edit.
+            if let id = textEdit?.id, !annotations.contains(where: { $0.id == id }) { textEdit = nil }
+        }
+        .onChange(of: textFocused) {
+            if !textFocused, textEdit != nil { commitText() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .commitPendingEdits)) { _ in commitText() }
+        .onDisappear { commitText() }
+    }
+
+    private func drawingSurface(_ fitted: CGSize) -> some View {
+        ZStack(alignment: .topLeading) {
+            Image(nsImage: image).resizable().frame(width: fitted.width, height: fitted.height)
+            blurLayer(fitted)
+            Canvas { ctx, size in drawAnnotations(in: &ctx, size: size) }
+                .frame(width: fitted.width, height: fitted.height)
+                .allowsHitTesting(false)
+            selectionLayer(fitted).allowsHitTesting(false)
+        }
+        .frame(width: fitted.width, height: fitted.height, alignment: .topLeading)
+        .contentShape(Rectangle())
+        .gesture(drag(fitted: fitted))
+        .focusable()
+        .focused($canvasFocused)
+        .focusEffectDisabled()
+        .onKeyPress(keys: [.delete, .deleteForward]) { _ in
+            guard textEdit == nil, mode == nil, selected != nil else { return .ignored }
+            deleteSelected()
+            return .handled
         }
     }
 
@@ -125,7 +143,8 @@ struct AnnotationCanvas: View {
     }
 
     private func drawAnnotations(in ctx: inout GraphicsContext, size: CGSize) {
-        let lw = AnnotationStyle.lineWidth(imageWidth: size.width)
+        let k = size.width / pixelWidth
+        let lw = AnnotationStyle.lineWidth(imageWidth: pixelWidth) * k
         let style = StrokeStyle(lineWidth: lw, lineCap: .round, lineJoin: .round)
         for annotation in shownAnnotations where annotation.id != textEdit?.id {
             switch annotation.kind {
@@ -141,7 +160,7 @@ struct AnnotationCanvas: View {
                 ctx.stroke(shaft, with: .color(Self.red), style: style)
                 ctx.fill(Path(arrow.head), with: .color(Self.red))
             case .text(let origin, let string):
-                let fontSize = AnnotationStyle.fontSize(imageWidth: size.width)
+                let fontSize = AnnotationStyle.fontSize(imageWidth: pixelWidth) * k
                 let p = CGPoint(x: origin.x * size.width, y: origin.y * size.height)
                 let outline = fontSize * 0.07
                 let font = Font.system(size: fontSize, weight: .bold)
@@ -169,7 +188,8 @@ struct AnnotationCanvas: View {
                     .offset(x: v.minX, y: v.minY)
                 if selected == .blur(i) { handle(CGPoint(x: v.maxX, y: v.maxY), round: false) }
             }
-            if case .annotation(let id)? = selected, let annotation = shownAnnotations.first(where: { $0.id == id }) {
+            if case .annotation(let id)? = selected, id != textEdit?.id,
+               let annotation = shownAnnotations.first(where: { $0.id == id }) {
                 switch annotation.kind {
                 case .rectangle(let r):
                     let v = denormalizedRect(r, in: fitted)
@@ -178,7 +198,8 @@ struct AnnotationCanvas: View {
                     handle(CGPoint(x: from.x * fitted.width, y: from.y * fitted.height), round: true)
                     handle(CGPoint(x: to.x * fitted.width, y: to.y * fitted.height), round: true)
                 case .text(let origin, let string):
-                    let f = textFrame(origin: origin, string: string, canvasSize: fitted).insetBy(dx: -3, dy: -3)
+                    let f = textFrame(origin: origin, string: string, canvasSize: fitted, imageWidth: pixelWidth)
+                        .insetBy(dx: -3, dy: -3)
                     Rectangle()
                         .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
                         .frame(width: f.width, height: f.height)
@@ -203,7 +224,9 @@ struct AnnotationCanvas: View {
     }
 
     private func textField(_ edit: TextEdit, fitted: CGSize) -> some View {
-        let fontSize = AnnotationStyle.fontSize(imageWidth: fitted.width)
+        let k = fitted.width / pixelWidth
+        let fontSize = AnnotationStyle.fontSize(imageWidth: pixelWidth) * k
+        let width = max(140, textSize(edit.text, imageWidth: pixelWidth).width * k + 24)
         return TextField("输入文字", text: Binding(get: { textEdit?.text ?? "" }, set: { textEdit?.text = $0 }))
             .textFieldStyle(.plain)
             .font(.system(size: fontSize, weight: .bold))
@@ -211,18 +234,30 @@ struct AnnotationCanvas: View {
             .padding(.horizontal, 3)
             .background(Color.white.opacity(0.85))
             .overlay(Rectangle().stroke(Color.accentColor, lineWidth: 1))
-            .frame(minWidth: 140)
-            .fixedSize()
+            .frame(width: width)
             .offset(x: edit.origin.x * fitted.width - 3, y: edit.origin.y * fitted.height)
             .focused($textFocused)
             .onSubmit(commitText)
             .onExitCommand { textEdit = nil; canvasFocused = true }
-            .onAppear { textFocused = true }
+            .onAppear { DispatchQueue.main.async { textFocused = true } }
     }
 
     // MARK: - Geometry
 
-    private var pixelWidth: CGFloat { CGFloat(image.representations.first?.pixelsWide ?? Int(image.size.width)) }
+    private var pixelWidth: CGFloat {
+        let w = CGFloat(image.representations.first?.pixelsWide ?? Int(image.size.width))
+        return w > 0 ? w : max(image.size.width, 1)
+    }
+
+    private var pixelSize: CGSize {
+        let h = CGFloat(image.representations.first?.pixelsHigh ?? Int(image.size.height))
+        return CGSize(width: pixelWidth, height: h > 0 ? h : max(image.size.height, 1))
+    }
+
+    private func hit(_ p: CGPoint, fitted: CGSize, selection: CanvasItem?) -> CanvasHit? {
+        hitTest(p, blurRegions: blurRegions, annotations: annotations, selected: selection, canvasSize: fitted,
+                imageWidth: pixelWidth, includeBlurBodies: tool == .select || tool == .blur)
+    }
 
     private func previewBlurRadius(fittedWidth: CGFloat) -> CGFloat {
         guard pixelWidth > 0 else { return 10 }
@@ -246,17 +281,22 @@ struct AnnotationCanvas: View {
         DragGesture(minimumDistance: 0, coordinateSpace: .local)
             .onChanged { value in
                 guard fitted.width > 0 else { return }
-                if mode == nil {
+                if mode == nil || dragStart != value.startLocation {
+                    workingBlur = nil
+                    workingAnnotations = nil
                     if textEdit != nil { commitText() }
+                    dragStart = value.startLocation
                     mode = begin(at: value.startLocation, fitted: fitted)
                 }
                 update(value, fitted: fitted)
             }
             .onEnded { value in
-                defer { mode = nil; workingBlur = nil; workingAnnotations = nil }
+                let wasIdle: Bool = { if case .idle? = mode { return true } else { return false } }()
+                defer { mode = nil; dragStart = nil; workingBlur = nil; workingAnnotations = nil }
                 guard fitted.width > 0 else { return }
                 let moved = abs(value.translation.width) + abs(value.translation.height)
-                if moved < 3 {
+                // A slightly shaky click with nothing to drag still counts as a click.
+                if moved < 3 || wasIdle {
                     tap(at: value.location, fitted: fitted)
                     return
                 }
@@ -266,21 +306,21 @@ struct AnnotationCanvas: View {
     }
 
     private func begin(at p: CGPoint, fitted: CGSize) -> DragMode {
-        switch hitTest(p, blurRegions: blurRegions, annotations: annotations, selected: selected, canvasSize: fitted) {
-        case .handle(.blur(let i), _)?:
+        switch hit(p, fitted: fitted, selection: selected) {
+        case .handle(.blur(let i), _)? where blurRegions.indices.contains(i):
             return .resizeBlur(i, blurRegions[i])
         case .handle(.annotation(let id), let h)?:
             guard let kind = annotations.first(where: { $0.id == id })?.kind else { return .idle }
             if case .rectangle(let r) = kind, h == .resize { return .resizeBox(id, r) }
             return .moveArrowEnd(id, isStart: h == .arrowStart, kind)
-        case .item(.blur(let i))?:
+        case .item(.blur(let i))? where blurRegions.indices.contains(i):
             selected = .blur(i)
             return .moveBlur(i, blurRegions[i])
         case .item(.annotation(let id))?:
             selected = .annotation(id)
             guard let kind = annotations.first(where: { $0.id == id })?.kind else { return .idle }
             return .moveAnnotation(id, kind)
-        case nil:
+        default:
             selected = nil
             return [.blur, .rectangle, .arrow].contains(tool) ? .create(start: p) : .idle
         }
@@ -299,25 +339,29 @@ struct AnnotationCanvas: View {
             case .arrow: workingAnnotations = annotations + [Annotation(id: Self.draftID, kind: .arrow(from: a, to: b))]
             default: break
             }
-        case .moveBlur(let i, let original)?:
+        case .moveBlur(let i, let original)? where blurRegions.indices.contains(i):
             var next = blurRegions
             next[i] = CGRect(x: min(max(0, original.minX + d.dx), 1 - original.width),
                              y: min(max(0, original.minY + d.dy), 1 - original.height),
                              width: original.width, height: original.height)
             workingBlur = next
-        case .resizeBlur(let i, let original)?:
+        case .resizeBlur(let i, let original)? where blurRegions.indices.contains(i):
             var next = blurRegions
             next[i] = resizedRect(original, by: d, minSize: minSize)
             workingBlur = next
         case .moveAnnotation(let id, let kind)?:
-            workingAnnotations = replacing(id, with: translated(kind, by: d))
+            var moved = translated(kind, by: d)
+            if case .text(let origin, let string) = moved {
+                moved = .text(origin: clampTextOrigin(origin, string: string, imageSize: pixelSize), string: string)
+            }
+            workingAnnotations = replacing(id, with: moved)
         case .resizeBox(let id, let r)?:
             workingAnnotations = replacing(id, with: .rectangle(resizedRect(r, by: d, minSize: minSize)))
         case .moveArrowEnd(let id, let isStart, let kind)?:
             guard case .arrow(let from, let to) = kind else { return }
             let p = normalized(value.location, fitted)
             workingAnnotations = replacing(id, with: isStart ? .arrow(from: p, to: to) : .arrow(from: from, to: p))
-        case .idle?, nil:
+        default:
             break
         }
     }
@@ -361,10 +405,11 @@ struct AnnotationCanvas: View {
 
     private func tap(at p: CGPoint, fitted: CGSize) {
         let now = Date()
-        let isDouble = lastTap.map { now.timeIntervalSince($0.time) < 0.35 && abs($0.point.x - p.x) + abs($0.point.y - p.y) < 6 } ?? false
+        let isDouble = lastTap.map {
+            now.timeIntervalSince($0.time) < NSEvent.doubleClickInterval && abs($0.point.x - p.x) + abs($0.point.y - p.y) < 6
+        } ?? false
         lastTap = (now, p)
-        if case .item(.annotation(let id))? = hitTest(p, blurRegions: blurRegions, annotations: annotations,
-                                                     selected: nil, canvasSize: fitted),
+        if case .item(.annotation(let id))? = hit(p, fitted: fitted, selection: nil),
            let annotation = annotations.first(where: { $0.id == id }),
            case .text(let origin, let string) = annotation.kind,
            isDouble || tool == .text {
@@ -382,11 +427,13 @@ struct AnnotationCanvas: View {
         guard let edit = textEdit else { return }
         textEdit = nil
         let text = edit.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let origin = clampTextOrigin(edit.origin, string: text, imageSize: pixelSize)
         var next = annotations
-        if let id = edit.id, let i = next.firstIndex(where: { $0.id == id }) {
-            if text.isEmpty { next.remove(at: i); selected = nil } else { next[i].kind = .text(origin: edit.origin, string: text) }
+        if let id = edit.id {
+            guard let i = next.firstIndex(where: { $0.id == id }) else { return }  // deleted meanwhile
+            if text.isEmpty { next.remove(at: i); selected = nil } else { next[i].kind = .text(origin: origin, string: text) }
         } else if !text.isEmpty {
-            let created = Annotation(kind: .text(origin: edit.origin, string: text))
+            let created = Annotation(kind: .text(origin: origin, string: text))
             next.append(created)
             selected = .annotation(created.id)
         }
@@ -411,4 +458,9 @@ struct AnnotationCanvas: View {
         }
         selected = nil
     }
+}
+
+extension Notification.Name {
+    /// Posted before exporting so an open text edit is saved first.
+    static let commitPendingEdits = Notification.Name("ClickDoc.commitPendingEdits")
 }

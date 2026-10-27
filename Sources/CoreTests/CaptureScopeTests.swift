@@ -53,4 +53,26 @@ let captureScopeTests: [TestCase] = [
                               imagePixelSize: CGSize(width: 3840, height: 2160))
         expectEqual(r, CGRect(x: 40, y: 200, width: 201, height: 100))
     }),
+    ("testCropIncludesClickedMenuFarFromWindow", {
+        // Finder's menu-bar menu at top-left while its only window is at the right.
+        let windows = [w(10, 24, 220, 300, pid: 7, layer: 101), w(800, 300, 500, 400, pid: 7, layer: 0)]
+        let crop = captureCropRect(click: CGPoint(x: 50, y: 60), windows: windows, displayFrame: display)
+        expect(crop?.contains(CGPoint(x: 50, y: 60)) == true, "click inside crop: \(String(describing: crop))")
+        expect(crop?.contains(CGRect(x: 10, y: 24, width: 220, height: 300)) == true, "menu inside crop")
+    }),
+    ("testCropKeepsWholeHighlightNearWindowEdge", {
+        let windows = [w(100, 100, 600, 400, pid: 7, layer: 0)]
+        let crop = captureCropRect(click: CGPoint(x: 104, y: 104), windows: windows, displayFrame: display)!
+        // The 60pt highlight circle around the click must fit.
+        expect(crop.contains(CGRect(x: 74, y: 74, width: 60, height: 60)), "\(crop)")
+    }),
+    ("testCropPrefersWindowActuallyHitByMouse", {
+        // A click-through overlay (another app) sits on top; the OS says window 42 got the click.
+        var overlay = w(0, 0, 1000, 800, pid: 3, layer: 0)
+        overlay.number = 1
+        var target = w(100, 100, 600, 400, pid: 7, layer: 0)
+        target.number = 42
+        let crop = captureCropRect(click: CGPoint(x: 300, y: 300), windows: [overlay, target], displayFrame: display, hitWindowNumber: 42)
+        expectEqual(crop, CGRect(x: 92, y: 92, width: 616, height: 416))
+    }),
 ]

@@ -38,8 +38,12 @@ actor ScreenCapturer {
     }
 
     /// Full pipeline for one step: capture, optionally crop to `crop` (global points), draw highlight, encode PNG.
-    func highlightedPNG(for click: CGPoint, crop: CGRect? = nil) async throws -> Data {
+    /// `refine` runs right after the screenshot and may widen the crop (e.g. to a menu the click opened).
+    func highlightedPNG(for click: CGPoint, crop initialCrop: CGRect? = nil,
+                        refine: (@Sendable () -> CGRect?)? = nil) async throws -> Data {
         var (image, frame) = try await capture(displayContaining: click)
+        var crop = initialCrop
+        if let base = crop, let wider = refine?() { crop = base.union(wider).intersection(frame) }
         if let crop {
             let px = pixelCropRect(crop: crop, displayFrame: frame,
                                    imagePixelSize: CGSize(width: image.width, height: image.height))

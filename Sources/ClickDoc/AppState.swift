@@ -126,7 +126,8 @@ final class AppState: ObservableObject {
     private func receive(_ click: RawClick) {
         // Decide about our own UI first: running AX against our own (busy) main thread would stall.
         let windows = Self.windowSnapshots()
-        if isOwnUI(at: click.location, windows: windows) { return }
+        let hitNumber = Self.windowNumberHit(at: click.location)
+        if isOwnUI(at: click.location, windows: windows, hitNumber: hitNumber) { return }
         // Inspect synchronously, before the clicked app reacts and changes its UI.
         let inspected = ElementInspector.inspect(at: click.location)
         let appName = inspected.appName
@@ -135,10 +136,19 @@ final class AppState: ObservableObject {
         let info = ElementInfo(pid: inspected.pid, appName: appName, elementName: inspected.elementName)
         // Start the screenshot now so it reflects this click, not later ones; only appending is serialized.
         let needsCapture = !(click.button == .left && click.clickCount >= 3)
-        let crop = captureScope == .window ? Self.windowCrop(at: click.location, windows: windows) : nil
+        let location = click.location
+        let crop = captureScope == .window ? Self.windowCrop(at: location, windows: windows, hitNumber: hitNumber) : nil
+        // Menus and popovers opened by this very click appear after mouse-down: widen the crop
+        // with a window snapshot taken right after the screenshot.
+        var refine: (@Sendable () -> CGRect?)?
+        if crop != nil {
+            refine = { @Sendable () -> CGRect? in
+                AppState.windowCrop(at: location, windows: AppState.windowSnapshots(), hitNumber: nil)
+            }
+        }
         let capturer = capturer
         let capture: Task<Data, Error>? = needsCapture
-            ? Task { try await capturer.highlightedPNG(for: click.location, crop: crop) }
+            ? Task { [refine] in try await capturer.highlightedPNG(for: location, crop: crop, refine: refine) }
             : nil
         let previous = chain
         chain = Task { @MainActor [weak self] in
@@ -148,14 +158,23 @@ final class AppState: ObservableObject {
     }
 
     /// Crop for "当前窗口" mode, decided at click time so it matches what was on screen.
-    private static func windowCrop(at point: CGPoint, windows: [WindowSnapshot]) -> CGRect? {
+    nonisolated private static func windowCrop(at point: CGPoint, windows: [WindowSnapshot], hitNumber: Int?) -> CGRect? {
         var displayID: CGDirectDisplayID = 0
         var count: UInt32 = 0
         guard CGGetDisplaysWithPoint(point, 1, &displayID, &count) == .success, count > 0 else { return nil }
-        return captureCropRect(click: point, windows: windows, displayFrame: CGDisplayBounds(displayID))
+        return captureCropRect(click: point, windows: windows, displayFrame: CGDisplayBounds(displayID),
+                               hitWindowNumber: hitNumber)
     }
 
-    private static func windowSnapshots() -> [WindowSnapshot] {
+    /// The window a mouse-down at `point` actually hits; respects click-through overlays.
+    private static func windowNumberHit(at point: CGPoint) -> Int? {
+        let mainHeight = CGDisplayBounds(CGMainDisplayID()).height
+        let n = NSWindow.windowNumber(at: cocoaPoint(fromGlobal: point, mainDisplayHeight: mainHeight),
+                                      belowWindowWithWindowNumber: 0)
+        return n > 0 ? n : nil
+    }
+
+    nonisolated private static func windowSnapshots() -> [WindowSnapshot] {
         guard let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] else {
             return []
         }
@@ -171,13 +190,9 @@ final class AppState: ObservableObject {
         }
     }
 
-    private func isOwnUI(at point: CGPoint, windows: [WindowSnapshot]) -> Bool {
+    private func isOwnUI(at point: CGPoint, windows: [WindowSnapshot], hitNumber: Int?) -> Bool {
         let me = getpid()
-        // The window a mouse-down actually hits; respects click-through overlays (ignoresMouseEvents).
-        let mainHeight = CGDisplayBounds(CGMainDisplayID()).height
-        let hit = NSWindow.windowNumber(at: cocoaPoint(fromGlobal: point, mainDisplayHeight: mainHeight),
-                                        belowWindowWithWindowNumber: 0)
-        if hit > 0 {
+        if let hit = hitNumber {
             if NSApp.windows.contains(where: { $0.windowNumber == hit }) { return true }
             if let owner = windows.first(where: { $0.number == hit }) { return owner.ownerPID == me }
         }
@@ -308,6 +323,7 @@ final class AppState: ObservableObject {
     }
 
     func export(_ format: ExportFormat = .markdownFolder) {
+        NotificationCenter.default.post(name: .commitPendingEdits, object: nil)
         guard !tutorial.isEmpty else { return }
         NSApp.activate(ignoringOtherApps: true)
         let panel = NSOpenPanel()
