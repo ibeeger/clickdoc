@@ -45,7 +45,7 @@ swift run CoreTests          # 运行逻辑层测试
 ./scripts/release.sh         # 生成 build/release/RecordToDocs-<版本>.dmg
 ```
 
-版本号写在 `VERSION` 文件里。构建脚本支持以下环境变量：
+版本号写在 `VERSION` 文件里。应用图标来自根目录的 `icon.png`：构建时自动居中裁成正方形、套上 macOS 圆角外形并生成 `.icns`，只在 `icon.png` 更新后才重新生成。构建脚本支持以下环境变量：
 
 | 变量 | 作用 | 默认值 |
 |---|---|---|

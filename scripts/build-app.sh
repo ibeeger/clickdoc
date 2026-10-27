@@ -28,6 +28,20 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/RecordToDocs"
 
+# App icon from ./icon.png, regenerated only when the source changes.
+ICON_PLIST=""
+if [ -f icon.png ]; then
+    ICNS=build/AppIcon.icns
+    if [ ! -f "$ICNS" ] || [ icon.png -nt "$ICNS" ] || [ scripts/make-icon.swift -nt "$ICNS" ]; then
+        swiftc -O scripts/make-icon.swift -o build/make-icon
+        build/make-icon icon.png build/AppIcon.iconset
+        iconutil -c icns build/AppIcon.iconset -o "$ICNS"
+        rm -rf build/AppIcon.iconset
+    fi
+    cp "$ICNS" "$APP/Contents/Resources/AppIcon.icns"
+    ICON_PLIST="<key>CFBundleIconFile</key><string>AppIcon</string>"
+fi
+
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -42,6 +56,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>LSUIElement</key><true/>
     <key>NSHighResolutionCapable</key><true/>
+    $ICON_PLIST
 </dict>
 </plist>
 PLIST
