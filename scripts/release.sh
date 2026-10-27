@@ -21,5 +21,9 @@ rm -f "$DMG"
 hdiutil create -volname "ClickDoc $VERSION" -srcfolder "$STAGE" -fs HFS+ -format UDZO -ov "$DMG" >/dev/null
 rm -rf "$STAGE"
 
+# Stable name for https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg
+cp "$DMG" "$OUT/ClickDoc.dmg"
+
 echo "Release: $(pwd)/$DMG"
+echo "Upload:  $(pwd)/$OUT/ClickDoc.dmg (stable name used by the website)"
 shasum -a 256 "$DMG"

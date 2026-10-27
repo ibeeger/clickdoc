@@ -1,5 +1,9 @@
 # ClickDoc
 
+**Click through it once. The guide writes itself.** ClickDoc is a free, open-source macOS menu bar app that screenshots every click, circles where you clicked and drafts each step. Edit, annotate and blur, then export to Markdown, a Notion import package or PDF. Chinese and English UI. Website: [clickdoc.xiaohan.dev](https://clickdoc.xiaohan.dev) · [Download](https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg) · MIT License.
+
+---
+
 一个类似 Folge 的 macOS 菜单栏小工具：录制鼠标点击，自动截图并标出点击位置，录完可编辑步骤、添加方框/箭头/文字标注、模糊敏感信息，导出为 Markdown、Notion 导入包或 PDF 教程。
 
 界面支持中文和英文，跟随系统语言：系统首选语言为中文时显示中文，其他语言显示英文；生成的步骤描述、Markdown 和 PDF 也随之切换。
@@ -61,4 +65,8 @@ swift run CoreTests          # 运行逻辑层测试
 
 1. 修改 `VERSION`。
 2. 运行 `./scripts/release.sh`，记下输出的 SHA-256。
-3. 在 GitHub Releases 新建版本，上传 dmg，在说明里附上 SHA-256 和上面的安装步骤。
+3. 在 GitHub Releases 新建版本（标签如 `v0.7.0`），上传 `build/release/ClickDoc.dmg`（官网下载按钮固定指向这个文件名），在说明里附上 SHA-256 和安装步骤。
+
+## 官网
+
+`website/` 是 [clickdoc.xiaohan.dev](https://clickdoc.xiaohan.dev) 的静态页面（无需构建），推送到 `main` 后由 `.github/workflows/pages.yml` 自动发布到 GitHub Pages。本地预览：`cd website && python3 -m http.server`。

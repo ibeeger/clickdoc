@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClickDoc · 点一遍，教程就写好了</title>
+<meta name="description" content="ClickDoc 是一款免费开源的 macOS 小工具：录制你的每一次点击，自动截图、圈出位置、写好步骤说明，导出为 Markdown、Notion 或 PDF 教程。类似 Folge、Scribe 的轻量开源选择。">
+<meta name="keywords" content="ClickDoc, 教程生成, 操作手册, 截图教程, macOS, Folge 替代, Scribe 替代, step-by-step guide, Folge alternative">
+<meta property="og:title" content="ClickDoc · 点一遍，教程就写好了">
+<meta property="og:description" content="录制每一次点击，自动生成带截图的分步教程。免费开源，仅限 macOS。">
+<meta property="og:image" content="https://clickdoc.xiaohan.dev/img/icon-256.png">
+<meta property="og:url" content="https://clickdoc.xiaohan.dev/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preload" href="fonts/instrument-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <a class="brand" href="#top"><img src="img/favicon.png" alt="" width="28" height="28"><span>ClickDoc</span></a>
+  <nav class="toc" aria-label="目录">
+    <a href="#how" data-i18n="nav.how">用法</a>
+    <a href="#parts" data-i18n="nav.parts">功能</a>
+    <a href="#install" data-i18n="nav.install">安装</a>
+    <a href="#faq" data-i18n="nav.faq">常见问题</a>
+    <a href="https://github.com/ibeeger/clickdoc" rel="noopener">GitHub</a>
+  </nav>
+  <div class="lang" role="group" aria-label="Language">
+    <button type="button" data-lang="zh" aria-pressed="true">中</button>
+    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ===== Cover ===== -->
+  <section class="cover">
+    <div class="cover-text">
+      <p class="kicker mono" data-i18n="cover.kicker">ClickDoc · 使用手册 · 第 1 版</p>
+      <h1 class="headline" data-i18n-html="cover.title">点一遍，<br>教程就<em>写好了</em></h1>
+      <p class="lede" data-i18n="cover.lede">在 Mac 上照常操作。ClickDoc 会在每次点击时自动截图、圈出位置、写好步骤说明；整理一下，就能导出成 Markdown、Notion 或 PDF。</p>
+      <div class="cta">
+        <a class="btn-download" id="download" href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg">
+          <span data-i18n="cta.download">下载 macOS 版</span><span class="arrow" aria-hidden="true">↓</span>
+        </a>
+        <a class="btn-plain" href="https://github.com/ibeeger/clickdoc" rel="noopener" data-i18n="cta.source">查看源码 →</a>
+      </div>
+      <p class="spec mono"><span data-i18n="cta.spec">免费开源 · macOS 14 及以上 · Apple 芯片与 Intel</span> · <span id="version">v0.7.0</span></p>
+    </div>
+
+    <figure class="fig fig-hero" aria-label="ClickDoc 录制演示">
+      <figcaption class="mono"><span>FIG. 01</span> <span data-i18n="fig1.caption">录制中：每次点击 → 一步</span></figcaption>
+      <div class="plate">
+        <div class="window">
+          <div class="titlebar"><i></i><i></i><i></i><span data-i18n="demo.title">系统设置</span></div>
+          <div class="window-body">
+            <ul class="sidebar">
+              <li data-i18n="demo.wifi">Wi‑Fi</li>
+              <li data-i18n="demo.bt">蓝牙</li>
+              <li class="target-1" data-i18n="demo.general">通用</li>
+              <li data-i18n="demo.display">显示器</li>
+              <li data-i18n="demo.privacy">隐私与安全性</li>
+            </ul>
+            <div class="pane">
+              <div class="row"><span data-i18n="demo.name">电脑名称</span><b class="field">MacBook</b></div>
+              <div class="row"><span data-i18n="demo.lang">语言与地区</span><b class="field target-2" data-i18n="demo.chinese">简体中文</b></div>
+              <div class="row"><span data-i18n="demo.date">日期与时间</span><b class="field">2026/10/27</b></div>
+              <span class="button target-3" data-i18n="demo.done">完成</span>
+            </div>
+          </div>
+          <span class="ring" aria-hidden="true"></span>
+          <span class="cursor" aria-hidden="true"></span>
+        </div>
+        <ol class="log" aria-live="off">
+          <li data-step="1"><b class="mono">01</b><span data-i18n="demo.step1">在 系统设置 中点击「通用」</span></li>
+          <li data-step="2"><b class="mono">02</b><span data-i18n="demo.step2">在 系统设置 中点击「简体中文」</span></li>
+          <li data-step="3"><b class="mono">03</b><span data-i18n="demo.step3">在 系统设置 中点击「完成」</span></li>
+        </ol>
+      </div>
+    </figure>
+  </section>
+
+  <!-- ===== §01 How ===== -->
+  <section class="chapter" id="how">
+    <header class="chapter-head">
+      <span class="sec mono">§ 01</span>
+      <h2 data-i18n="how.title">三步完成一份教程</h2>
+    </header>
+    <ol class="procedure">
+      <li>
+        <figure class="fig mini">
+          <figcaption class="mono">FIG. 02</figcaption>
+          <div class="plate plate-menubar">
+            <div class="menubar"><span></span><span></span><span class="rec"></span><span></span></div>
+            <div class="menu">
+              <div class="menu-item on" data-i18n="how.menu.start">开始录制</div>
+              <div class="menu-item" data-i18n="how.menu.scope">截图范围 ›</div>
+              <div class="menu-item" data-i18n="how.menu.editor">打开编辑器</div>
+            </div>
+          </div>
+        </figure>
+        <h3><span class="num">1</span><span data-i18n="how.1.title">录制</span></h3>
+        <p data-i18n="how.1.body">在菜单栏点「开始录制」，然后像平时一样操作。每一次点击都会变成一个步骤：截图、红圈、说明文字一次到位。</p>
+      </li>
+      <li>
+        <figure class="fig mini">
+          <figcaption class="mono">FIG. 03</figcaption>
+          <div class="plate plate-edit">
+            <div class="shot">
+              <span class="mark-box"></span>
+              <span class="mark-arrow"></span>
+              <span class="mark-text" data-i18n="how.edit.label">点这里</span>
+              <span class="mark-blur">name@example.com</span>
+            </div>
+          </div>
+        </figure>
+        <h3><span class="num">2</span><span data-i18n="how.2.title">编辑</span></h3>
+        <p data-i18n="how.2.body">修改文字、调整顺序、批量删除；用箭头、方框和文字标出重点，把邮箱、密钥这类信息模糊掉。</p>
+      </li>
+      <li>
+        <figure class="fig mini">
+          <figcaption class="mono">FIG. 04</figcaption>
+          <div class="plate plate-export">
+            <div class="file"><b>.md</b><span>Markdown</span></div>
+            <div class="file"><b>.zip</b><span>Notion</span></div>
+            <div class="file"><b>.pdf</b><span>PDF</span></div>
+          </div>
+        </figure>
+        <h3><span class="num">3</span><span data-i18n="how.3.title">导出</span></h3>
+        <p data-i18n="how.3.body">导出为 Markdown 文件夹、Notion 导入包，或 A4 分页的 PDF。模糊和标注都会合成进图片里。</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ===== §02 Parts list ===== -->
+  <section class="chapter" id="parts">
+    <header class="chapter-head">
+      <span class="sec mono">§ 02</span>
+      <h2 data-i18n="parts.title">零件清单</h2>
+      <p class="aside" data-i18n="parts.aside">ClickDoc 包含的全部功能。</p>
+    </header>
+    <table class="bom">
+      <thead><tr><th class="mono" data-i18n="parts.no">编号</th><th data-i18n="parts.part">部件</th><th data-i18n="parts.desc">说明</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">A-01</td><th data-i18n="p1.t">点击截图</th><td data-i18n="p1.d">每次点击自动截图，并在点击位置画上红圈。双击合并成一步，右键也会记录。</td></tr>
+        <tr><td class="mono">A-02</td><th data-i18n="p2.t">只截当前窗口</th><td data-i18n="p2.d">截图裁剪到被点击的窗口，连同它弹出的菜单一起保留；也可以切换为整个屏幕。</td></tr>
+        <tr><td class="mono">A-03</td><th data-i18n="p3.t">自动写步骤</th><td data-i18n-html="p3.d">读取按钮和菜单的名称，生成「在 Safari 中点击<q>新建标签页</q>」这样的说明。</td></tr>
+        <tr><td class="mono">B-01</td><th data-i18n="p4.t">标注工具</th><td data-i18n="p4.d">箭头、方框、文字，可以选中、移动、调整大小，随时修改。</td></tr>
+        <tr><td class="mono">B-02</td><th data-i18n="p5.t">模糊遮挡</th><td data-i18n="p5.d">框选敏感信息即可模糊。原图保留，导出时才合成，框可以随时调整。</td></tr>
+        <tr><td class="mono">B-03</td><th data-i18n="p6.t">草稿自动保存</th><td data-i18n="p6.d">录到哪、改到哪都会自动保存，退出后再打开继续编辑。</td></tr>
+        <tr><td class="mono">C-01</td><th data-i18n="p7.t">三种导出</th><td data-i18n="p7.d">Markdown 文件夹、Notion 导入包（.zip）、A4 分页 PDF。</td></tr>
+        <tr><td class="mono">C-02</td><th data-i18n="p8.t">完全本地</th><td data-i18n="p8.d">无需账号，不联网，不上传任何截图。源码全部公开。</td></tr>
+        <tr><td class="mono">C-03</td><th data-i18n="p9.t">中英文界面</th><td data-i18n="p9.d">跟随系统语言，生成的步骤说明也随之切换。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== §03 Install ===== -->
+  <section class="chapter" id="install">
+    <header class="chapter-head">
+      <span class="sec mono">§ 03</span>
+      <h2 data-i18n="install.title">安装</h2>
+      <p class="aside" data-i18n="install.aside">约 2 分钟。</p>
+    </header>
+    <ol class="instructions">
+      <li>
+        <span class="num">1</span>
+        <div>
+          <h3 data-i18n="i1.t">下载并拖进「应用程序」</h3>
+          <p data-i18n-html="i1.d">打开 <a href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg">ClickDoc.dmg</a>，把 ClickDoc 拖到右侧的「应用程序」文件夹。</p>
+        </div>
+      </li>
+      <li>
+        <span class="num">2</span>
+        <div>
+          <h3 data-i18n="i2.t">解除系统拦截</h3>
+          <p data-i18n="i2.d">ClickDoc 没有经过苹果公证，第一次打开会被系统拦截。打开「终端」，粘贴下面这行并回车：</p>
+          <div class="terminal">
+            <code id="cmd">xattr -dr com.apple.quarantine /Applications/ClickDoc.app</code>
+            <button type="button" class="copy mono" data-copy="#cmd" data-i18n="i2.copy">复制</button>
+          </div>
+          <p class="note" data-i18n="i2.alt">不想用终端？先双击打开一次，再到「系统设置 › 隐私与安全性」底部点「仍要打开」。</p>
+        </div>
+      </li>
+      <li>
+        <span class="num">3</span>
+        <div>
+          <h3 data-i18n="i3.t">授予两项权限</h3>
+          <p data-i18n="i3.d">第一次点「开始录制」时，按提示在「系统设置 › 隐私与安全性」中打开「辅助功能」和「屏幕录制」，然后重新打开 ClickDoc。</p>
+        </div>
+      </li>
+    </ol>
+    <p class="warning"><b class="mono" data-i18n="warn.label">注意</b><span data-i18n="warn.body">ClickDoc 没有程序坞图标，启动后请在屏幕右上角的菜单栏找圆形图标。</span></p>
+  </section>
+
+  <!-- ===== §04 FAQ ===== -->
+  <section class="chapter" id="faq">
+    <header class="chapter-head">
+      <span class="sec mono">§ 04</span>
+      <h2 data-i18n="faq.title">故障排除与常见问题</h2>
+    </header>
+    <dl class="trouble">
+      <div><dt data-i18n="q1">打开时提示「无法验证开发者」或「已损坏」</dt><dd data-i18n="a1">这是 macOS 对所有未经公证应用的统一拦截，文件本身没有问题。ClickDoc 是个人开源项目，没有付费做公证。按 § 03 第 2 步执行一次命令即可。</dd></div>
+      <div><dt data-i18n="q2">会上传我的截图吗？</dt><dd data-i18n="a2">不会。录制、编辑、导出都在你的 Mac 上完成，应用没有任何联网功能，也不需要账号。</dd></div>
+      <div><dt data-i18n="q3">为什么需要「辅助功能」和「屏幕录制」权限？</dt><dd data-i18n="a3">辅助功能用来感知鼠标点击、读取按钮名称；屏幕录制用来截图。两者缺一不可。</dd></div>
+      <div><dt data-i18n="q4">升级后要重新授权吗？</dt><dd data-i18n="a4">可能需要。如果「辅助功能」列表里还留着旧的 ClickDoc，先用「−」删掉，再重新授权。</dd></div>
+      <div><dt data-i18n="q5">收费吗？支持 Windows 吗？</dt><dd data-i18n="a5">完全免费，MIT 协议开源。目前只支持 macOS 14 及以上，Apple 芯片和 Intel 都可以。</dd></div>
+      <div><dt data-i18n="q7">和 Folge 有什么不同？</dt><dd data-i18n="a7">思路相近，都是录制点击、自动生成分步教程。Folge 功能更全，比如 Word 和 PPT 导出、AI 写说明、品牌模板，完整版一次性售价 89 美元。ClickDoc 更轻量，全部功能免费开源，有中文界面，还能直接导出 Notion 导入包。ClickDoc 与 Folge 没有任何关联。</dd></div>
+      <div><dt data-i18n="q6">遇到问题或有想法？</dt><dd data-i18n-html="a6">欢迎在 <a href="https://github.com/ibeeger/clickdoc/issues" rel="noopener">GitHub Issues</a> 反馈。</dd></div>
+    </dl>
+  </section>
+</main>
+
+<footer class="colophon">
+  <div class="mono end" data-i18n="footer.end">— 手册完 —</div>
+  <div class="colophon-grid">
+    <p><span class="mono">ClickDoc</span> <span id="version-footer">v0.7.0</span></p>
+    <p><a href="https://github.com/ibeeger/clickdoc" rel="noopener">GitHub</a> · <a href="https://github.com/ibeeger/clickdoc/issues" rel="noopener" data-i18n="footer.feedback">反馈问题</a> · <a href="https://github.com/ibeeger/clickdoc/blob/main/LICENSE" rel="noopener">MIT License</a></p>
+    <p class="mono">© 2026 xiaohan.dev</p>
+  </div>
+</footer>
+
+<script src="main.js" defer></script>
+</body>
+</html>
