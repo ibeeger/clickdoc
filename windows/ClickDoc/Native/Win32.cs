@@ -43,7 +43,7 @@ struct NOTIFYICONIDENTIFIER
     public Guid guidItem;
 }
 
-static partial class Win32
+static unsafe partial class Win32
 {
     public const uint NIM_ADD = 0, NIM_MODIFY = 1, NIM_DELETE = 2;
     public const uint NIF_MESSAGE = 0x1, NIF_ICON = 0x2, NIF_TIP = 0x4;

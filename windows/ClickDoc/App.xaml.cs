@@ -42,9 +42,10 @@ public partial class App : Application
         }) { IsBackground = true, Name = "ShowEditorSignal" }.Start();
 
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        CaptureExclusion.Install();
         _state = new AppState(Dispatcher);
         _tray = new TrayIcon(ShowTrayMenu);
-        _state.Recorder = new Recorder();
+        _state.Recorder = new Recorder(_state, _tray);
         _state.ShowEditorRequested += ShowEditor;
         _state.PropertyChanged += (_, args) =>
         {
