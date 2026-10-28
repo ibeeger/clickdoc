@@ -1,0 +1,30 @@
+ClickDoc for Windows Install Guide
+==================================
+
+The installer is not code-signed, so the first time you run it Windows may show a blue
+"Windows protected your PC" (SmartScreen) screen. Windows shows this for every unsigned
+program; the file is fine. Install it like this:
+
+1. Double-click ClickDoc-Setup.exe.
+
+2. If "Windows protected your PC" appears, click "More info", then "Run anyway".
+
+3. Finish the setup wizard. No administrator rights are needed; ClickDoc is installed
+   for the current user only.
+
+4. When setup finishes, ClickDoc opens its editor and puts an icon in the notification
+   area at the bottom right of the taskbar. Windows 11 hides new icons behind the "^"
+   arrow; drag the ClickDoc icon from there onto the taskbar to keep it visible.
+
+5. Click "Start Recording" and use the program you are documenting as usual; every click
+   is captured. Stop from the tray icon or with "Stop Recording" in the editor.
+
+Notes:
+- Clicks in programs running as administrator (Task Manager, Registry Editor, ...) cannot
+  be recorded; Windows keeps them isolated from normal programs.
+- The current tutorial is saved automatically to %LocalAppData%\ClickDoc\draft and comes
+  back when you reopen ClickDoc. Uninstalling ClickDoc does not delete it.
+
+Updating: run the new installer over the old version. Your draft is kept.
+
+Requirements: Windows 10 version 2004 (May 2020 Update) or later, or Windows 11; 64-bit.
