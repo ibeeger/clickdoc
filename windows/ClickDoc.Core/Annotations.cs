@@ -122,6 +122,9 @@ public static class Annotations
     {
         float w = styleWidth ?? image.Width;
         float sigma = Imaging.BlurSigma(w) * image.Width / w;
-        return Render(Imaging.ApplyBlur(image, step.BlurRegions, sigma), step.Annotations, w);
+        var blurred = Imaging.ApplyBlur(image, step.BlurRegions, sigma);
+        var result = Render(blurred, step.Annotations, w);
+        if (!ReferenceEquals(blurred, image) && !ReferenceEquals(blurred, result)) blurred.Dispose();
+        return result;
     }
 }

@@ -31,8 +31,13 @@ public static class Imaging
         return data.ToArray();
     }
 
-    public static SKBitmap DecodePng(byte[] png) =>
-        SKBitmap.Decode(png) ?? throw new ExportException(ContentLanguage.Current.ImageProcessingFailed);
+    /// Throws ExportException for bytes that are not an image (SKBitmap.Decode would throw ArgumentNullException).
+    public static SKBitmap DecodePng(byte[] png)
+    {
+        using var data = SKData.CreateCopy(png);
+        using var codec = SKCodec.Create(data);
+        return (codec is null ? null : SKBitmap.Decode(codec)) ?? throw new ExportException(ContentLanguage.Current.ImageProcessingFailed);
+    }
 
     /// Downscaled copy whose longer side is at most `maxPixelSize`; never upscales.
     public static SKBitmap Thumbnail(byte[] png, int maxPixelSize)
