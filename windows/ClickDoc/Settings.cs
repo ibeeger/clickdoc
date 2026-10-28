@@ -9,6 +9,9 @@ sealed class Settings
 {
     public CaptureScope Scope { get; set; } = CaptureScope.Window;
 
+    /// Whether the user has been told that closing the editor keeps ClickDoc in the tray.
+    public bool TrayHintShown { get; set; }
+
     static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
     static string FilePath => Path.Combine(AppPaths.Root, "settings.json");

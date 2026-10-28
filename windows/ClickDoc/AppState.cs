@@ -81,6 +81,15 @@ sealed class AppState : INotifyPropertyChanged
 
     public void ShowEditor() => ShowEditorRequested?.Invoke();
 
+    /// True only the first time ever: whether to tell the user ClickDoc keeps running in the tray.
+    public bool ConsumeTrayHint()
+    {
+        if (_settings.TrayHintShown) return false;
+        _settings.TrayHintShown = true;
+        _settings.Save();
+        return true;
+    }
+
     public void StartRecording()
     {
         if (IsRecording || Recorder is null) return;

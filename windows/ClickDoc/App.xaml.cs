@@ -22,6 +22,10 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        Log.Trim();
+        Log.Write($"start {typeof(App).Assembly.GetName().Version} on Windows {Environment.OSVersion.Version}");
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => Log.Write("process exit");
+        AppDomain.CurrentDomain.UnhandledException += (_, args) => Log.Write($"unhandled: {args.ExceptionObject}");
         if (Environment.OSVersion.Version.Build < 19041)
         {
             MessageBox.Show(L("ClickDoc 需要 Windows 10 2004 或更高版本。"), "ClickDoc", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -45,6 +49,7 @@ public partial class App : Application
         // A tray app must not vanish over one unexpected error: report it in the tray menu instead.
         DispatcherUnhandledException += (_, args) =>
         {
+            Log.Write($"error: {args.Exception}");
             if (_state is not null) _state.LastError = L("出错了：%@", args.Exception.Message);
             args.Handled = true;
         };
@@ -66,10 +71,13 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        Log.Write("exit: saving draft");
         _state?.FlushSave();
+        Log.Write("exit: removing tray icon");
         _tray?.Dispose();
         _instance?.Dispose();
         base.OnExit(e);
+        Log.Write("exit: done");
     }
 
     /// A second launch brings the running instance's editor forward instead of starting another app.
@@ -87,7 +95,15 @@ public partial class App : Application
     void ShowEditor()
     {
         if (_state is null) return;
-        _editor ??= new EditorWindow(_state);
+        if (_editor is null)
+        {
+            _editor = new EditorWindow(_state);
+            _editor.HiddenToTray += () =>
+            {
+                if (_state.ConsumeTrayHint())
+                    _tray?.ShowBalloon(L("ClickDoc 仍在运行"), L("编辑窗口已关闭，ClickDoc 会继续留在托盘。要退出，请右键托盘图标选择「退出」。"));
+            };
+        }
         _editor.Show();
         if (_editor.WindowState == WindowState.Minimized) _editor.WindowState = WindowState.Normal;
         _editor.Activate();
@@ -134,8 +150,19 @@ public partial class App : Application
 
     void Quit()
     {
+        Log.Write($"quit requested (recording: {_state?.IsRecording})");
+        ExitIfStillRunning();
         _state?.StopRecording();
         _editor?.AllowClose();
         Shutdown();
     }
+
+    /// Last resort: if anything keeps the process alive after Quit, end it. Draft writes are
+    /// atomic (manifest last), so this cannot leave a broken draft.
+    static void ExitIfStillRunning() => new Thread(() =>
+    {
+        Thread.Sleep(TimeSpan.FromSeconds(10));
+        Log.Write("still running 10 s after quit; forcing exit");
+        Environment.Exit(0);
+    }) { IsBackground = true, Name = "QuitWatchdog" }.Start();
 }

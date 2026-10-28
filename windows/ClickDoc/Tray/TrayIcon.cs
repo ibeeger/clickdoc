@@ -45,6 +45,22 @@ sealed class TrayIcon : IDisposable
         Update(Win32.NIM_MODIFY);
     }
 
+    /// A notification from the tray icon (a toast on Windows 10/11).
+    public unsafe void ShowBalloon(string title, string text)
+    {
+        var data = new NOTIFYICONDATAW
+        {
+            cbSize = (uint)sizeof(NOTIFYICONDATAW),
+            hWnd = Handle,
+            uID = IconId,
+            uFlags = Win32.NIF_INFO,
+            dwInfoFlags = Win32.NIIF_INFO,
+        };
+        for (int i = 0; i < Math.Min(title.Length, 63); i++) data.szInfoTitle[i] = title[i];
+        for (int i = 0; i < Math.Min(text.Length, 255); i++) data.szInfo[i] = text[i];
+        Win32.Shell_NotifyIcon(Win32.NIM_MODIFY, ref data);
+    }
+
     /// The icon's screen rectangle in physical pixels, or null while it is hidden in the overflow area.
     public SKRectI? GetIconRect()
     {

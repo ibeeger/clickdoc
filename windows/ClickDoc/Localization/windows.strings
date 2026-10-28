@@ -6,3 +6,5 @@
 "无法监听鼠标点击" = "Couldn't listen for mouse clicks";
 "按住 Ctrl 点选多个，按住 Shift 连续选择，Ctrl+A 全选" = "Hold Ctrl to pick several, Shift for a range, Ctrl+A for all";
 "出错了：%@" = "Something went wrong: %@";
+"ClickDoc 仍在运行" = "ClickDoc is still running";
+"编辑窗口已关闭，ClickDoc 会继续留在托盘。要退出，请右键托盘图标选择「退出」。" = "The editor is closed; ClickDoc stays in the tray. To quit, right-click the tray icon and choose Quit.";

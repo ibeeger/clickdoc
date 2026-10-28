@@ -54,12 +54,16 @@ public partial class EditorWindow : Window
     /// Lets the window close for real when the app quits; otherwise closing only hides it.
     internal void AllowClose() => _allowClose = true;
 
+    /// Raised when closing the window only hid it.
+    internal event Action? HiddenToTray;
+
     protected override void OnClosing(CancelEventArgs e)
     {
         if (!_allowClose)
         {
             e.Cancel = true;
             Hide();
+            HiddenToTray?.Invoke();
         }
         base.OnClosing(e);
     }

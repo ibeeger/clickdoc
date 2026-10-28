@@ -46,7 +46,8 @@ struct NOTIFYICONIDENTIFIER
 static unsafe partial class Win32
 {
     public const uint NIM_ADD = 0, NIM_MODIFY = 1, NIM_DELETE = 2;
-    public const uint NIF_MESSAGE = 0x1, NIF_ICON = 0x2, NIF_TIP = 0x4;
+    public const uint NIF_MESSAGE = 0x1, NIF_ICON = 0x2, NIF_TIP = 0x4, NIF_INFO = 0x10;
+    public const uint NIIF_INFO = 0x1;
     public const int WM_APP = 0x8000, WM_LBUTTONUP = 0x0202, WM_RBUTTONUP = 0x0205;
     public const uint IMAGE_ICON = 1, LR_LOADFROMFILE = 0x10;
     public const int SM_CXSMICON = 49, SM_CYSMICON = 50;
