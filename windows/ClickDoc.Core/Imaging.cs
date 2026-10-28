@@ -39,6 +39,14 @@ public static class Imaging
         return (codec is null ? null : SKBitmap.Decode(codec)) ?? throw new ExportException(ContentLanguage.Current.ImageProcessingFailed);
     }
 
+    /// The image's pixel width, read from its header without decoding the pixels.
+    public static int DecodeWidth(byte[] png)
+    {
+        using var data = SKData.CreateCopy(png);
+        using var codec = SKCodec.Create(data);
+        return codec?.Info.Width ?? throw new ExportException(ContentLanguage.Current.ImageProcessingFailed);
+    }
+
     /// Downscaled copy whose longer side is at most `maxPixelSize`; never upscales.
     public static SKBitmap Thumbnail(byte[] png, int maxPixelSize)
     {

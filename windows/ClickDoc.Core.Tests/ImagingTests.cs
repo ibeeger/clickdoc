@@ -55,6 +55,13 @@ public class ImagingTests
     }
 
     [Fact]
+    public void DecodeWidthReadsHeaderOnly()
+    {
+        Assert.Equal(1000, Imaging.DecodeWidth(Imaging.EncodePng(Blank(1000, 400))));
+        Assert.Throws<ExportException>(() => Imaging.DecodeWidth([1, 2, 3]));
+    }
+
+    [Fact]
     public void BlurFlattensDetailInsideRegionOnly()
     {
         var out_ = Imaging.ApplyBlur(Stripes(400, 200), [SKRect.Create(0, 0, 0.5f, 1)]);

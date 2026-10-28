@@ -20,10 +20,18 @@
             </StackPanel>
         </Grid>
         <Grid x:Name="Body">
-            <TextBlock x:Name="EmptyHint"
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" MinWidth="220" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="320" />
+            </Grid.ColumnDefinitions>
+            <ContentControl x:Name="ListHost" Grid.Column="0" />
+            <TextBlock x:Name="EmptyHint" Grid.Column="0"
                        Text="{l:L 还没有步骤。点上方的「开始录制」，或从任务栏右下角的托盘图标开始。}"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                       TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420" Opacity="0.6" />
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16"
+                       TextWrapping="Wrap" TextAlignment="Center" Opacity="0.6" IsHitTestVisible="False" />
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" ResizeBehavior="PreviousAndNext" />
+            <ContentControl x:Name="DetailHost" Grid.Column="2" Margin="12" />
         </Grid>
     </DockPanel>
 </Window>

@@ -31,6 +31,11 @@ sealed class AppState : INotifyPropertyChanged
 
     public event Action? ShowEditorRequested;
 
+    /// Asks open editors to commit typing in progress (e.g. a text annotation) before an export.
+    public event Action? CommitPendingEdits;
+
+    public void RequestCommit() => CommitPendingEdits?.Invoke();
+
     public Dispatcher Dispatcher { get; }
 
     public Tutorial Tutorial { get; private set; } = new();
@@ -88,6 +93,39 @@ sealed class AppState : INotifyPropertyChanged
         if (Recorder is not null) await Recorder.Stop(fromTray);
         IsRecording = false;
         ShowEditor();
+    }
+
+    public void SetDescription(Guid id, string text)
+    {
+        Tutorial.UpdateDescription(id, text);
+        Touch();
+    }
+
+    public void SetBlurRegions(Guid id, IReadOnlyList<SkiaSharp.SKRect> regions)
+    {
+        Tutorial.SetBlurRegions(id, regions);
+        Touch();
+    }
+
+    public void SetAnnotations(Guid id, IReadOnlyList<Annotation> annotations)
+    {
+        Tutorial.SetAnnotations(id, annotations);
+        Touch();
+    }
+
+    public void MoveSteps(IReadOnlyList<int> sourceIndices, int destination)
+    {
+        Tutorial.Move(sourceIndices, destination);
+        Recorder?.ForgetLastClick();  // the last step may have changed; never double-click-upgrade a moved step
+        Touch();
+    }
+
+    public void DeleteSteps(IReadOnlySet<Guid> ids)
+    {
+        if (ids.Count == 0) return;
+        Tutorial.Remove(ids);
+        Recorder?.ForgetLastClick();
+        Touch();
     }
 
     public void NewTutorial()

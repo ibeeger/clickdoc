@@ -4,3 +4,4 @@
 "还没有步骤。点上方的「开始录制」，或从任务栏右下角的托盘图标开始。" = "No steps yet. Click Start Recording above, or use the tray icon at the bottom right of the taskbar.";
 "ClickDoc（录制中）" = "ClickDoc (recording)";
 "无法监听鼠标点击" = "Couldn't listen for mouse clicks";
+"按住 Ctrl 点选多个，按住 Shift 连续选择，Ctrl+A 全选" = "Hold Ctrl to pick several, Shift for a range, Ctrl+A for all";
