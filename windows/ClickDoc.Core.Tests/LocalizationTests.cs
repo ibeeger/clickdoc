@@ -4,8 +4,8 @@ namespace ClickDoc.Core.Tests;
 
 public partial class LocalizationTests
 {
-    /// The lower bound rises to 50 once every window exists (Task 13).
-    const int MinimumKeys = 0;
+    /// Guards against the scan silently finding nothing.
+    const int MinimumKeys = 40;
 
     [GeneratedRegex("""\bL\("((?:[^"\\]|\\.)*)"[,)]""")]
     private static partial Regex CodeKey();

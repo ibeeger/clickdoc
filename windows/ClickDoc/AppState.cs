@@ -1,9 +1,12 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Threading;
 
 namespace ClickDoc;
+
+public enum ExportFormat { MarkdownFolder, NotionZip, Pdf }
 
 /// The current tutorial and app-wide state. Lives on the UI thread.
 sealed class AppState : INotifyPropertyChanged
@@ -126,6 +129,41 @@ sealed class AppState : INotifyPropertyChanged
         Tutorial.Remove(ids);
         Recorder?.ForgetLastClick();
         Touch();
+    }
+
+    /// Asks where to export, writes the tutorial in `format`, then shows the result in Explorer.
+    public async void Export(ExportFormat format, Window? owner)
+    {
+        RequestCommit();
+        if (Tutorial.IsEmpty) return;
+        var dialog = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = format switch
+            {
+                ExportFormat.NotionZip => L("选择导出位置，将生成一个 zip，可在 Notion 中用「导入 > Markdown」导入"),
+                ExportFormat.Pdf => L("选择导出位置，将生成一个以教程标题命名的 PDF"),
+                _ => L("选择导出位置，将在其中新建一个以教程标题命名的文件夹"),
+            },
+        };
+        if (dialog.ShowDialog(owner) != true) return;
+        var directory = dialog.FolderName;
+        var snapshot = Tutorial.Snapshot();
+        try
+        {
+            var result = await Task.Run(() => format switch
+            {
+                ExportFormat.NotionZip => ClickDoc.Core.Export.ExportNotionZip(snapshot, directory),
+                ExportFormat.Pdf => Pdf.ExportPdf(snapshot, directory),
+                _ => ClickDoc.Core.Export.ExportTutorial(snapshot, directory),
+            });
+            HasUnexportedChanges = false;
+            Changed();
+            Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{result}\"") { UseShellExecute = false });
+        }
+        catch (Exception e) when (e is ExportException or IOException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(owner ?? Application.Current.MainWindow, e.Message, L("导出失败"), MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     public void NewTutorial()

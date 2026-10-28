@@ -34,6 +34,7 @@ public partial class EditorWindow : Window
         InitializeComponent();
         _list = new StepListView(state);
         ListHost.Content = _list;
+        ExportSlot.Content = new ExportMenu(state, this);
         _list.SelectionChanged += (_, _) => ShowDetail();
         _list.DeleteRequested += RequestDelete;
         TitleBox.Text = state.Tutorial.Title;
@@ -67,6 +68,7 @@ public partial class EditorWindow : Window
     {
         if (!TitleBox.IsKeyboardFocused && TitleBox.Text != _state.Tutorial.Title) TitleBox.Text = _state.Tutorial.Title;
         EmptyHint.Visibility = _state.Tutorial.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
+        ExportSlot.IsEnabled = !_state.Tutorial.IsEmpty;
         _list.Sync();
         if (_shownStep is { } id && _state.Tutorial.Steps.FirstOrDefault(s => s.Id == id) is { } step)
         {
