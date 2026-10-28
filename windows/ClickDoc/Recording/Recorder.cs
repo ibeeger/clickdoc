@@ -19,11 +19,12 @@ sealed class Recorder(AppState state, TrayIcon tray)
     MouseHook? _hook;
     Channel<RawClick>? _clicks;
     Task _reader = Task.CompletedTask;
-    /// Tail of the serial processing chain; every click waits for the one before it.
-    Task _chain = Task.CompletedTask;
+    /// Every click waits for the one before it; a failing click is reported and skipped.
+    readonly SerialQueue _queue = new(e => state.Dispatcher.BeginInvoke(() => state.LastError = L("截图失败：%@", e.Message)));
     ClickCounter _counter = new(500, 4, 4);
     int _doubleClickMs = 500;
-    CaptureScope _scope;
+    /// Read on the reader thread; follows the tray setting even mid-recording, like the Mac app.
+    volatile CaptureScope _scope = state.Scope;
     // Where and when the most recent step's click happened (UI thread only).
     SKPointI? _lastPos;
     DateTimeOffset? _lastAt;
@@ -33,6 +34,8 @@ sealed class Recorder(AppState state, TrayIcon tray)
         _doubleClickMs = (int)Win32.GetDoubleClickTime();
         _counter = new ClickCounter(_doubleClickMs, Win32.GetSystemMetrics(Win32.SM_CXDOUBLECLK), Win32.GetSystemMetrics(Win32.SM_CYDOUBLECLK));
         _scope = state.Scope;
+        state.PropertyChanged -= OnStateChanged;
+        state.PropertyChanged += OnStateChanged;
         var clicks = Channel.CreateUnbounded<RawClick>(new UnboundedChannelOptions { SingleReader = true });
         var hook = new MouseHook(click => clicks.Writer.TryWrite(click));
         if (!hook.Start())
@@ -45,7 +48,11 @@ sealed class Recorder(AppState state, TrayIcon tray)
         ForgetLastClick();
         _reader = Task.Run(async () =>
         {
-            await foreach (var click in clicks.Reader.ReadAllAsync()) Receive(click);
+            await foreach (var click in clicks.Reader.ReadAllAsync())
+            {
+                try { Receive(click); }
+                catch (Exception e) { await state.Dispatcher.InvokeAsync(() => state.LastError = L("截图失败：%@", e.Message)); }
+            }
         });
         return true;
     }
@@ -58,8 +65,13 @@ sealed class Recorder(AppState state, TrayIcon tray)
         _hook = null;
         _clicks?.Writer.TryComplete();
         await _reader;
-        await _chain;
+        await _queue.Drain();
         if (fromTray) DropTrailingShellSteps(stoppedAt);
+    }
+
+    void OnStateChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AppState.Scope)) _scope = state.Scope;
     }
 
     /// Forgets the previous click so it cannot be upgraded to a double-click (after edits that move steps).
@@ -82,17 +94,15 @@ sealed class Recorder(AppState state, TrayIcon tray)
         var scope = _scope;
         Task<byte[]>? capture = needsCapture ? Task.Run(() => Capture(click.Pos, scope, windows, hit)) : null;
         var inspect = Task.Run(() => ElementInspector.Inspect(click.Pos, hit));
-        var previous = _chain;
-        _chain = Process(previous, click, count, isShell, capture, inspect);
+        _queue.Enqueue(() => Process(click, count, isShell, capture, inspect));
     }
 
     bool IsOwnUI(SKPointI p, nint hit) =>
         (hit != 0 && Win32.ProcessId(hit) == _pid) || tray.GetIconRect() is { } icon && icon.Contains(p.X, p.Y);
 
-    async Task Process(Task previous, RawClick click, int count, bool isShell, Task<byte[]>? capture,
+    async Task Process(RawClick click, int count, bool isShell, Task<byte[]>? capture,
                        Task<(string? AppName, string? ElementName)> inspect)
     {
-        await previous;
         var names = await inspect;
         byte[]? png = null;
         Exception? error = null;

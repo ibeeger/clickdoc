@@ -40,6 +40,8 @@ sealed class StepListView : ListBox
     /// Thumbnail per step, valid while the step's blur regions and annotations are the same lists.
     readonly Dictionary<Guid, (object Blur, object Marks, ImageSource Image)> _thumbnails = [];
     Point? _dragStart;
+    /// Set while rows are rebuilt, so the window does not see the selection blink empty.
+    bool _syncing;
     InsertionAdorner? _insertion;
 
     public StepListView(AppState state)
@@ -73,12 +75,25 @@ sealed class StepListView : ListBox
     public void Sync()
     {
         var steps = _state.Tutorial.Steps;
-        if (!steps.Select(s => s.Id).SequenceEqual(_rows.Select(r => r.Id)))
+        if (_rows.Count <= steps.Count && _rows.Select(r => r.Id).SequenceEqual(steps.Take(_rows.Count).Select(s => s.Id)))
+        {
+            // Steps only appended (recording): add rows and keep selection, focus and scroll as they are.
+            foreach (var step in steps.Skip(_rows.Count)) _rows.Add(new StepRow(step.Id));
+        }
+        else
         {
             var selected = SelectedIds;
-            _rows.Clear();
-            foreach (var step in steps) _rows.Add(new StepRow(step.Id));
-            foreach (var row in _rows.Where(r => selected.Contains(r.Id))) SelectedItems.Add(row);
+            _syncing = true;
+            try
+            {
+                _rows.Clear();
+                foreach (var step in steps) _rows.Add(new StepRow(step.Id));
+                foreach (var row in _rows.Where(r => selected.Contains(r.Id))) SelectedItems.Add(row);
+            }
+            finally
+            {
+                _syncing = false;
+            }
             foreach (var id in _thumbnails.Keys.Except(steps.Select(s => s.Id)).ToList()) _thumbnails.Remove(id);
         }
         for (int i = 0; i < steps.Count; i++)
@@ -138,6 +153,12 @@ sealed class StepListView : ListBox
         text.AppendChild(caption);
         grid.AppendChild(text);
         return new DataTemplate { VisualTree = grid };
+    }
+
+    protected override void OnSelectionChanged(SelectionChangedEventArgs e)
+    {
+        // The owner refreshes its detail pane itself after a sync.
+        if (!_syncing) base.OnSelectionChanged(e);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

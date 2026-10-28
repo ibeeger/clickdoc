@@ -43,7 +43,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
         shell: pwsh
         run: |
-          choco install innosetup -y --no-progress
+          # upgrade also installs; an older preinstalled Inno Setup cannot read the vendored 6.5+ ChineseSimplified.isl
+          choco upgrade innosetup -y --no-progress
           $iscc = Get-ChildItem "${env:ProgramFiles(x86)}\Inno Setup*\ISCC.exe", "$env:ProgramFiles\Inno Setup*\ISCC.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $iscc) { Write-Error "ISCC.exe not found"; exit 1 }
           $version = (Get-Content VERSION -Raw).Trim()

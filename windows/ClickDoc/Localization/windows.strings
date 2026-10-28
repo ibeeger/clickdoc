@@ -5,3 +5,4 @@
 "ClickDoc（录制中）" = "ClickDoc (recording)";
 "无法监听鼠标点击" = "Couldn't listen for mouse clicks";
 "按住 Ctrl 点选多个，按住 Shift 连续选择，Ctrl+A 全选" = "Hold Ctrl to pick several, Shift for a range, Ctrl+A for all";
+"出错了：%@" = "Something went wrong: %@";

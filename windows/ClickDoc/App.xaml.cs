@@ -42,6 +42,13 @@ public partial class App : Application
         }) { IsBackground = true, Name = "ShowEditorSignal" }.Start();
 
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        // A tray app must not vanish over one unexpected error: report it in the tray menu instead.
+        DispatcherUnhandledException += (_, args) =>
+        {
+            if (_state is not null) _state.LastError = L("出错了：%@", args.Exception.Message);
+            args.Handled = true;
+        };
+        TaskScheduler.UnobservedTaskException += (_, args) => args.SetObserved();
         CaptureExclusion.Install();
         _state = new AppState(Dispatcher);
         _tray = new TrayIcon(ShowTrayMenu);

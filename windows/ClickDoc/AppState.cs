@@ -93,7 +93,14 @@ sealed class AppState : INotifyPropertyChanged
     public async void StopRecording(bool fromTray = false)
     {
         if (!IsRecording) return;
-        if (Recorder is not null) await Recorder.Stop(fromTray);
+        try
+        {
+            if (Recorder is not null) await Recorder.Stop(fromTray);
+        }
+        catch (Exception e)
+        {
+            LastError = L("截图失败：%@", e.Message);
+        }
         IsRecording = false;
         ShowEditor();
     }
@@ -160,7 +167,7 @@ sealed class AppState : INotifyPropertyChanged
             Changed();
             Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{result}\"") { UseShellExecute = false });
         }
-        catch (Exception e) when (e is ExportException or IOException or UnauthorizedAccessException)
+        catch (Exception e)
         {
             MessageBox.Show(owner ?? Application.Current.MainWindow, e.Message, L("导出失败"), MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -221,7 +228,7 @@ sealed class AppState : INotifyPropertyChanged
         {
             // Keep the unreadable draft for manual recovery instead of overwriting it.
             try { LastError = L("上次的草稿无法读取，已另存到 %@", _store.MoveAside(DateTimeOffset.Now)); }
-            catch (IOException) { LastError = L("上次的草稿无法读取，已另存到 %@", _store.Directory); }
+            catch (Exception) { LastError = L("上次的草稿无法读取，已另存到 %@", _store.Directory); }
         }
     }
 
