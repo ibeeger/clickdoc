@@ -1,0 +1,5 @@
+/* English for Windows-only UI strings. Keys are the Chinese source strings; checked by LocalizationTests. */
+
+"ClickDoc 需要 Windows 10 2004 或更高版本。" = "ClickDoc requires Windows 10 version 2004 or later.";
+"还没有步骤。点上方的「开始录制」，或从任务栏右下角的托盘图标开始。" = "No steps yet. Click Start Recording above, or use the tray icon at the bottom right of the taskbar.";
+"ClickDoc（录制中）" = "ClickDoc (recording)";

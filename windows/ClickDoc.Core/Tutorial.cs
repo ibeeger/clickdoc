@@ -24,6 +24,14 @@ public sealed class Tutorial
 
     public void Append(Step step) => _steps.Add(step);
 
+    /// A copy that later edits do not affect (steps are immutable records), for saving off the UI thread.
+    public Tutorial Snapshot()
+    {
+        var copy = new Tutorial { Title = Title };
+        copy._steps.AddRange(_steps);
+        return copy;
+    }
+
     public void Remove(IReadOnlySet<Guid> ids) => _steps.RemoveAll(s => ids.Contains(s.Id));
 
     /// Same semantics as SwiftUI's `move(fromOffsets:toOffset:)`.

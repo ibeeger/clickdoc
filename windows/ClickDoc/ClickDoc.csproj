@@ -7,6 +7,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\ClickDoc.ico</ApplicationIcon>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Fluent ThemeMode is still marked experimental. -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
@@ -14,6 +15,20 @@
 
   <ItemGroup>
     <ProjectReference Include="../ClickDoc.Core/ClickDoc.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- English UI: the Mac table plus Windows-only strings. -->
+    <EmbeddedResource Include="../../Localization/en.lproj/Localizable.strings" LogicalName="en.strings" />
+    <EmbeddedResource Include="Localization/windows.strings" LogicalName="windows.strings" />
+    <Resource Include="Assets/ClickDoc.ico" />
+    <Content Include="Assets/tray-idle.ico;Assets/tray-recording.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System.IO" />
+    <Using Include="ClickDoc.Core" />
+    <Using Include="ClickDoc.Localization.Strings" Static="true" />
   </ItemGroup>
 
 </Project>

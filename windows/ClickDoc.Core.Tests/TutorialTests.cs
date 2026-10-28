@@ -80,6 +80,20 @@ public class TutorialTests
     }
 
     [Fact]
+    public void SnapshotIsIndependent()
+    {
+        var a = MakeStep("A");
+        var t = With(a);
+        t.Title = "T";
+        var copy = t.Snapshot();
+        t.Append(MakeStep("B"));
+        t.UpdateDescription(a.Id, "A2");
+        t.Title = "T2";
+        Assert.Equal("T", copy.Title);
+        Assert.Equal(["A"], copy.Steps.Select(s => s.Description));
+    }
+
+    [Fact]
     public void RemoveManyKeepsOrderOfTheRest()
     {
         var s = Numbered(5);
