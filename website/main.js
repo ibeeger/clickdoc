@@ -16,15 +16,20 @@
   addEventListener("scroll", updateNav, { passive: true });
   updateNav();
 
+  // Both links work without JavaScript. Put the Windows download first on Windows.
+  if (/windows/i.test(navigator.userAgentData?.platform || navigator.userAgent)) {
+    document.querySelectorAll(".downloads").forEach((group) => group.prepend(group.querySelector("[data-windows]")));
+  }
+
   // ---------- i18n ----------
   // Chinese lives in the HTML; English replaces it on demand.
   const EN = {
     "nav.how": "How it works", "nav.parts": "Features", "nav.install": "Install", "nav.faq": "FAQ",
-    "hero.badge": "Free & open source · macOS menu bar app",
+    "hero.badge": "Free & open source · Desktop app for macOS & Windows",
     "cover.title": "Click through it once.<br>The guide <em>writes itself</em>.",
-    "cover.lede": "Use your Mac as usual. ClickDoc screenshots every click, circles where you clicked and drafts each step. Tidy it up, then export to Markdown, Notion or PDF.",
-    "cta.download": "Download for macOS", "cta.github": "Source on GitHub",
-    "cta.spec": "macOS 14+ · Apple silicon & Intel",
+    "cover.lede": "Work as usual. ClickDoc screenshots every click, circles where you clicked and drafts each step. Tidy it up, then export to Markdown, Notion or PDF.",
+    "cta.download": "Download for macOS", "cta.windows": "Download for Windows", "cta.github": "Source on GitHub",
+    "cta.spec": "macOS 14+ (Apple silicon or Intel) · Windows 10 version 2004+ (x64)",
     "doc.title": "How to change the system language",
     "demo.title": "System Settings", "demo.wifi": "Wi‑Fi", "demo.bt": "Bluetooth", "demo.general": "General",
     "demo.display": "Displays", "demo.privacy": "Privacy & Security", "demo.name": "Name", "demo.lang": "Language",
@@ -34,7 +39,7 @@
     "demo.step3": "Click “Done” in System Settings",
     "how.eyebrow": "How it works", "how.title": "A guide in three steps",
     "how.menu.start": "Start Recording", "how.menu.scope": "Capture Area ›", "how.menu.editor": "Open Editor",
-    "how.1.title": "Record", "how.1.body": "Hit Start Recording in the menu bar and work as usual. Every click becomes a step: screenshot, red circle and caption in one go.",
+    "how.1.title": "Record", "how.1.body": "Hit Start Recording from the macOS menu bar or Windows system tray and work as usual. Every click becomes a step: screenshot, red circle and caption in one go.",
     "how.edit.label": "Click here",
     "how.2.title": "Edit", "how.2.body": "Reword, reorder or bulk-delete steps. Point things out with arrows, boxes and text, and blur emails, keys and anything private.",
     "how.3.title": "Export", "how.3.body": "Export a Markdown folder, a Notion import package or a paginated A4 PDF. Blur and annotations are burned into the images.",
@@ -57,14 +62,19 @@
     "i2.alt": "Prefer not to use Terminal? Open ClickDoc once, then click “Open Anyway” at the bottom of System Settings › Privacy & Security.",
     "i3.t": "Grant two permissions",
     "i3.d": "The first time you click Start Recording, turn on Accessibility and Screen Recording in System Settings › Privacy & Security, then reopen ClickDoc.",
+    "win.install": "Run the installer",
+    "win.setup": "supports x64 PCs running Windows 10 version 2004 or later, including Windows 11. Run the installer and follow the prompts. Installation is per user and needs no administrator access.",
+    "win.start": "Start recording",
+    "win.smartscreen": "The installer is unsigned. If SmartScreen says “Windows protected your PC”, confirm you downloaded it from the official ClickDoc release, then select “More info” and “Run anyway”.",
+    "win.tray": "Open the ClickDoc menu in the system tray and choose Start Recording. If the icon is hidden, click the up arrow on the taskbar.",
     "warn.body": "ClickDoc has no Dock icon. Once it's running, look for the round icon in the menu bar.",
     "faq.title": "Frequently asked questions",
     "q1": "macOS says it “can't verify the developer” or that the app “is damaged”",
     "a1": "That's how macOS treats every un-notarized app; the file is fine. ClickDoc is a personal open-source project without paid notarization. Run the command from install step 2 once.",
-    "q2": "Are my screenshots uploaded?", "a2": "No. Recording, editing and exporting all happen on your Mac. The app has no network features and needs no account.",
+    "q2": "Are my screenshots uploaded?", "a2": "No. Recording, editing and exporting all happen on your computer. The app has no network features and needs no account.",
     "q3": "Why Accessibility and Screen Recording?", "a3": "Accessibility lets ClickDoc notice clicks and read button names; Screen Recording lets it take screenshots. It needs both.",
     "q4": "Do I need to grant access again after updating?", "a4": "Possibly. If an old ClickDoc is still listed under Accessibility, remove it with “−” and grant access again.",
-    "q5": "Does it cost anything? Windows?", "a5": "Free and MIT-licensed. macOS 14 or later only, on Apple silicon or Intel.",
+    "q5": "Does it cost anything? Windows?", "a5": "Free and MIT-licensed. Supports macOS 14 or later on Apple silicon or Intel, and x64 PCs running Windows 10 version 2004 or later, including Windows 11.",
     "q7": "How is it different from Folge?",
     "a7": "Same idea: record clicks, get a step-by-step guide. Folge does more, such as Word and PowerPoint export, AI-written captions and brand templates, and its full version is a one-time $89. ClickDoc is lighter, entirely free and open source, has a Chinese UI and exports a Notion import package. ClickDoc is not affiliated with Folge.",
     "q6": "Found a bug or have an idea?", "a6": "Tell us on <a href=\"https://github.com/ibeeger/clickdoc/issues\" rel=\"noopener\">GitHub Issues</a>.",
