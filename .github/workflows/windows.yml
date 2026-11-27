@@ -1,0 +1,69 @@
+name: Windows
+
+on:
+  push:
+    paths: ["windows/**", "VERSION", ".github/workflows/windows.yml"]
+  pull_request:
+    paths: ["windows/**", "VERSION", ".github/workflows/windows.yml"]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    # Releases get a Windows installer only once the port is switched on (repository variable).
+    if: github.event_name != 'release' || vars.WINDOWS_RELEASE_ENABLED == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Check the release tag matches VERSION
+        if: github.event_name == 'release'
+        shell: pwsh
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          if ($env:TAG -ne "v$version") { Write-Error "Release tag $env:TAG does not match VERSION $version"; exit 1 }
+
+      - name: Test
+        run: dotnet test windows/ClickDoc.Core.Tests -c Release
+
+      - name: Publish
+        run: dotnet publish windows/ClickDoc -c Release -r win-x64 --self-contained -p:PublishSingleFile=false -o windows/out/ClickDoc
+
+      - name: Build installer
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'release'
+        shell: pwsh
+        run: |
+          # upgrade also installs; an older preinstalled Inno Setup cannot read the vendored 6.5+ ChineseSimplified.isl
+          choco upgrade innosetup -y --no-progress
+          $iscc = Get-ChildItem "${env:ProgramFiles(x86)}\Inno Setup*\ISCC.exe", "$env:ProgramFiles\Inno Setup*\ISCC.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $iscc) { Write-Error "ISCC.exe not found"; exit 1 }
+          $version = (Get-Content VERSION -Raw).Trim()
+          & $iscc.FullName "/DAppVersion=$version" windows/installer/ClickDoc.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # Stable name for https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc-Setup.exe
+          Copy-Item "windows/out/installer/ClickDoc-$version-Setup.exe" windows/out/installer/ClickDoc-Setup.exe
+
+      - name: Upload build artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClickDoc-Windows
+          path: windows/out/installer/*.exe
+
+      - name: Attach installer to the release
+        if: github.event_name == 'release'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload $env:TAG (Get-ChildItem windows/out/installer/*.exe).FullName --clobber

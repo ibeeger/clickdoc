@@ -43,7 +43,40 @@
 
 dmg 里的 `安装说明.txt` 有更详细的步骤。
 
-## 开发
+## Windows 版
+
+从 0.8.0 开始提供，功能与 macOS 版一致，常驻在任务栏右下角的托盘区。代码在 `windows/` 目录（C# + .NET 10 + WPF）。
+
+系统要求：Windows 10 2004 或更高版本、Windows 11，64 位。
+
+安装：下载 Release 里的 `ClickDoc-Setup.exe` 运行即可，不需要管理员权限。安装包没有代码签名，如果出现“Windows 已保护你的电脑”，先点“更多信息”，再点“仍要运行”。详见 `packaging/Windows 安装说明.txt`。
+
+草稿保存在 `%LocalAppData%\ClickDoc\draft`。以管理员身份运行的程序里的点击无法录制。
+
+### 开发（在 macOS 上）
+
+需要 .NET 10 SDK。Mac 上不能运行 WPF 程序，所以运行和界面测试要在 Windows 上做（虚拟机也可以）。
+
+```
+dotnet test windows/ClickDoc.Core.Tests          # 逻辑与图像处理测试，在 Mac 上就能运行
+dotnet build windows/ClickDoc -c Release         # 在 Mac 上编译 Windows 程序
+windows/scripts/publish.sh                       # 输出到 windows/out/ClickDoc，可直接拷进 Windows 运行
+```
+
+`windows/ClickDoc.Core` 不依赖 WPF，包含全部逻辑和图像处理（SkiaSharp）；`windows/ClickDoc` 是 WPF 外壳，包括托盘、鼠标钩子、截屏、UI Automation 和编辑器。
+
+界面文字同样通过 `L("中文")` 获取。英文翻译直接复用 Mac 版的 `Localization/en.lproj/Localizable.strings`，Windows 独有的文字放在 `windows/ClickDoc/Localization/windows.strings`。图标由 `dotnet run --project windows/tools/MakeIcons -- icon.png windows/ClickDoc/Assets` 从 `icon.png` 生成。手动测试清单见 `docs/windows-manual-test.md`。
+
+### 发布 Windows 安装包
+
+`.github/workflows/windows.yml` 会在以下情况运行：
+- 推送或 PR 改动了 `windows/`：编译并运行测试；
+- 手动触发：额外打出安装包，作为 Actions 产物上传；
+- 发布 GitHub Release，且仓库变量 `WINDOWS_RELEASE_ENABLED` 为 `true`：打包并把 `ClickDoc-<版本>-Setup.exe` 和固定文件名的 `ClickDoc-Setup.exe` 挂到这个 Release 上。
+
+Release 的标签必须是 `v` 加上 `VERSION` 文件里的版本号。
+
+## 开发（macOS 版）
 
 只需要 Command Line Tools，不需要 Xcode。
 

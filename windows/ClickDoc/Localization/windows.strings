@@ -1,0 +1,10 @@
+/* English for Windows-only UI strings. Keys are the Chinese source strings; checked by LocalizationTests. */
+
+"ClickDoc 需要 Windows 10 2004 或更高版本。" = "ClickDoc requires Windows 10 version 2004 or later.";
+"还没有步骤。点上方的「开始录制」，或从任务栏右下角的托盘图标开始。" = "No steps yet. Click Start Recording above, or use the tray icon at the bottom right of the taskbar.";
+"ClickDoc（录制中）" = "ClickDoc (recording)";
+"无法监听鼠标点击" = "Couldn't listen for mouse clicks";
+"按住 Ctrl 点选多个，按住 Shift 连续选择，Ctrl+A 全选" = "Hold Ctrl to pick several, Shift for a range, Ctrl+A for all";
+"出错了：%@" = "Something went wrong: %@";
+"ClickDoc 仍在运行" = "ClickDoc is still running";
+"编辑窗口已关闭，ClickDoc 会继续留在托盘。要退出，请右键托盘图标选择「退出」。" = "The editor is closed; ClickDoc stays in the tray. To quit, right-click the tray icon and choose Quit.";

@@ -92,10 +92,13 @@ h1, h2, h3 { font-family: var(--display); letter-spacing: -0.02em; }
   animation: rec 1.6s ease-in-out infinite;
 }
 .lede { margin: 24px 0 34px; max-width: 30em; font-size: 18px; line-height: 1.75; color: rgba(255, 255, 255, 0.86); }
-.cta { display: flex; gap: 14px; flex-wrap: wrap; }
-.btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 14px; font: 650 16px var(--sans); text-decoration: none; transition: transform 140ms ease, box-shadow 140ms ease, background 140ms; }
-.btn-primary { background: #fff; color: var(--indigo); box-shadow: 0 14px 34px rgba(20, 22, 90, 0.28), inset 0 -2px 0 rgba(63, 75, 240, 0.12); }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(20, 22, 90, 0.34); }
+.cta { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+.downloads { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; }
+.downloads > :last-child { font-size: 14px; text-underline-offset: 3px; }
+.downloads > :last-child svg { display: none; }
+.btn, .downloads > :first-child { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 14px; font: 650 16px var(--sans); text-decoration: none; transition: transform 140ms ease, box-shadow 140ms ease, background 140ms; }
+.downloads > :first-child { background: #fff; color: var(--indigo); box-shadow: 0 14px 34px rgba(20, 22, 90, 0.28), inset 0 -2px 0 rgba(63, 75, 240, 0.12); }
+.downloads > :first-child:hover { transform: translateY(-2px); box-shadow: 0 18px 40px rgba(20, 22, 90, 0.34); }
 .btn-glass { color: #fff; background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 .btn-glass:hover { background: var(--glass-strong); }
 .spec { margin: 18px 0 0; font-size: 13px; color: rgba(255, 255, 255, 0.7); }
@@ -225,11 +228,12 @@ h1, h2, h3 { font-family: var(--display); letter-spacing: -0.02em; }
 .install { position: relative; overflow: hidden; padding: 70px clamp(24px, 6vw, 80px) 60px; border-radius: 36px; background: var(--grad); color: #fff; }
 .orb-c { width: 700px; height: 700px; right: -300px; top: -340px; background: radial-gradient(circle, rgba(170, 220, 255, 0.4), transparent 70%); }
 .section-head.light .eyebrow { background: none; color: rgba(255,255,255,.75); -webkit-background-clip: initial; background-clip: initial; }
+.platform-title { position: relative; max-width: 780px; margin: 32px auto 12px; font-size: 24px; }
 .instructions { position: relative; list-style: none; margin: 0 auto; padding: 0; max-width: 780px; display: flex; flex-direction: column; gap: 16px; }
 .instructions li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 18px; padding: 22px 24px; border-radius: 20px; background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .num { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; color: var(--indigo); font: 700 17px var(--mono); }
-.instructions h3 { margin: 6px 0 6px; font-size: 20px; }
-:lang(zh-CN) .instructions h3 { font-family: var(--sans); font-weight: 700; }
+.instructions h4 { margin: 6px 0 6px; font-size: 20px; }
+:lang(zh-CN) .instructions h4 { font-family: var(--sans); font-weight: 700; }
 .instructions p { margin: 0; color: rgba(255,255,255,.85); }
 .instructions a { color: #fff; text-decoration-color: var(--cyan); text-underline-offset: 3px; }
 .terminal { display: flex; align-items: stretch; margin: 14px 0 10px; border-radius: 14px; overflow: hidden; background: #0f1033; box-shadow: 0 14px 30px rgba(10, 10, 60, 0.4); }
@@ -255,7 +259,7 @@ h1, h2, h3 { font-family: var(--display); letter-spacing: -0.02em; }
 .closing img { border-radius: 24px; box-shadow: 0 24px 50px rgba(63, 75, 240, 0.35); }
 .closing h2 { margin: 26px 0 26px; font-size: clamp(28px, 3.6vw, 44px); }
 :lang(zh-CN) .closing h2 { font-family: var(--sans); font-weight: 800; }
-.closing .btn-primary { background: var(--grad); color: #fff; box-shadow: 0 16px 34px rgba(63, 75, 240, 0.35); }
+.closing .downloads > :first-child { background: var(--grad); color: #fff; box-shadow: 0 16px 34px rgba(63, 75, 240, 0.35); }
 
 .footer { border-top: 1px solid var(--line); background: #fff; padding: 28px max(24px, (100% - 1160px) / 2); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 14px; color: var(--ink-soft); }
 .footer p { margin: 0; }

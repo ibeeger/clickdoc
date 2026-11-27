@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ClickDoc · 点一遍，教程就写好了</title>
-<meta name="description" content="ClickDoc 是一款免费开源的 macOS 小工具：录制你的每一次点击，自动截图、圈出位置、写好步骤说明，导出为 Markdown、Notion 或 PDF 教程。类似 Folge、Scribe 的轻量开源选择。">
-<meta name="keywords" content="ClickDoc, 教程生成, 操作手册, 截图教程, macOS, Folge 替代, Scribe 替代, step-by-step guide, Folge alternative">
+<meta name="description" content="ClickDoc 是一款适用于 macOS 和 Windows 的免费开源工具：录制你的每一次点击，自动截图、圈出位置、写好步骤说明，导出为 Markdown、Notion 或 PDF 教程。类似 Folge、Scribe 的轻量开源选择。">
+<meta name="keywords" content="ClickDoc, 教程生成, 操作手册, 截图教程, macOS, Windows, Folge 替代, Scribe 替代, step-by-step guide, Folge alternative">
 <meta name="theme-color" content="#3f5bff">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ClickDoc">
 <meta property="og:title" content="ClickDoc · Click through it once. The guide writes itself.">
-<meta property="og:description" content="Free, open-source macOS app that turns your clicks into step-by-step guides with screenshots. 点一遍，教程就写好了：录制每一次点击，自动生成带截图的分步教程。">
+<meta property="og:description" content="Free, open-source app for macOS and Windows that turns your clicks into step-by-step guides with screenshots. 点一遍，教程就写好了：录制每一次点击，自动生成带截图的分步教程。">
 <meta property="og:url" content="https://clickdoc.xiaohan.dev/">
 <meta property="og:image" content="https://clickdoc.xiaohan.dev/img/og.png">
 <meta property="og:image:width" content="1200">
@@ -20,7 +20,7 @@
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ClickDoc · Click through it once. The guide writes itself.">
-<meta name="twitter:description" content="Free, open-source macOS app that turns your clicks into step-by-step guides. 点一遍，教程就写好了。">
+<meta name="twitter:description" content="Free, open-source app for macOS and Windows that turns your clicks into step-by-step guides. 点一遍，教程就写好了。">
 <meta name="twitter:image" content="https://clickdoc.xiaohan.dev/img/og.png">
 <meta name="twitter:image:alt" content="ClickDoc: Click through it once. The guide writes itself.">
 <link rel="icon" type="image/png" href="img/favicon.png">
@@ -54,20 +54,26 @@
     <span class="orb orb-b" aria-hidden="true"></span>
 
     <div class="hero-copy">
-      <p class="badge"><span class="rec-dot" aria-hidden="true"></span><span data-i18n="hero.badge">免费开源 · macOS 菜单栏工具</span></p>
+      <p class="badge"><span class="rec-dot" aria-hidden="true"></span><span data-i18n="hero.badge">免费开源 · macOS 与 Windows 桌面工具</span></p>
       <h1 class="headline" data-i18n-html="cover.title">点一遍，<br>教程就<span class="hl">写好了</span></h1>
-      <p class="lede" data-i18n="cover.lede">在 Mac 上照常操作。ClickDoc 会在每次点击时自动截图、圈出位置、写好步骤说明；整理一下，就能导出成 Markdown、Notion 或 PDF。</p>
+      <p class="lede" data-i18n="cover.lede">照常操作你的电脑。ClickDoc 会在每次点击时自动截图、圈出位置、写好步骤说明；整理一下，就能导出成 Markdown、Notion 或 PDF。</p>
       <div class="cta">
-        <a class="btn btn-primary" id="download" href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.2.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2-1.1 2.8-2.2.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-.9-2.5-3.7zM14.2 5.8c.6-.8 1.1-1.8 1-2.8-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-1 2.7 1 .1 2-.5 2.6-1.3z"/></svg>
-          <span data-i18n="cta.download">下载 macOS 版</span>
-        </a>
+        <div class="downloads" id="download">
+          <a href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.2.8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2-1.1 2.8-2.2.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-.9-2.5-3.7zM14.2 5.8c.6-.8 1.1-1.8 1-2.8-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-1 2.7 1 .1 2-.5 2.6-1.3z"/></svg>
+            <span data-i18n="cta.download">下载 macOS 版</span>
+          </a>
+          <a data-windows href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc-Setup.exe">
+            <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M1 1h8v8H1zm10 0h8v8h-8zM1 11h8v8H1zm10 0h8v8h-8z"/></svg>
+            <span data-i18n="cta.windows">下载 Windows 版</span>
+          </a>
+        </div>
         <a class="btn btn-glass" href="https://github.com/ibeeger/clickdoc" rel="noopener">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.9 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>
           <span data-i18n="cta.github">GitHub 源码</span>
         </a>
       </div>
-      <p class="spec"><span data-i18n="cta.spec">macOS 14 及以上 · Apple 芯片与 Intel</span> · <span id="version">v0.7.0</span></p>
+      <p class="spec"><span data-i18n="cta.spec">macOS 14+（Apple 芯片或 Intel） · Windows 10 2004 及以上（x64）</span> · <span id="version">v0.7.0</span></p>
     </div>
 
     <!-- Icon composition: glass viewfinder → glowing arrow → white document -->
@@ -132,7 +138,7 @@
         </div>
         <span class="step-no">01</span>
         <h3 data-i18n="how.1.title">录制</h3>
-        <p data-i18n="how.1.body">在菜单栏点「开始录制」，然后像平时一样操作。每一次点击都会变成一个步骤：截图、红圈、说明文字一次到位。</p>
+        <p data-i18n="how.1.body">在 macOS 菜单栏或 Windows 系统托盘点「开始录制」，然后像平时一样操作。每一次点击都会变成一个步骤：截图、红圈、说明文字一次到位。</p>
       </li>
       <li class="card">
         <div class="card-art art-edit">
@@ -185,18 +191,19 @@
         <p class="eyebrow" data-i18n="install.eyebrow">安装 · 约 2 分钟</p>
         <h2 data-i18n="install.title">安装</h2>
       </header>
+      <h3 class="platform-title">macOS</h3>
       <ol class="instructions">
         <li>
           <span class="num">1</span>
           <div>
-            <h3 data-i18n="i1.t">下载并拖进「应用程序」</h3>
+            <h4 data-i18n="i1.t">下载并拖进「应用程序」</h4>
             <p data-i18n-html="i1.d">打开 <a href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg">ClickDoc.dmg</a>，把 ClickDoc 拖到右侧的「应用程序」文件夹。</p>
           </div>
         </li>
         <li>
           <span class="num">2</span>
           <div>
-            <h3 data-i18n="i2.t">解除系统拦截</h3>
+            <h4 data-i18n="i2.t">解除系统拦截</h4>
             <p data-i18n="i2.d">ClickDoc 没有经过苹果公证，第一次打开会被系统拦截。打开「终端」，粘贴下面这行并回车：</p>
             <div class="terminal">
               <code id="cmd">xattr -dr com.apple.quarantine /Applications/ClickDoc.app</code>
@@ -208,12 +215,30 @@
         <li>
           <span class="num">3</span>
           <div>
-            <h3 data-i18n="i3.t">授予两项权限</h3>
+            <h4 data-i18n="i3.t">授予两项权限</h4>
             <p data-i18n="i3.d">第一次点「开始录制」时，按提示在「系统设置 › 隐私与安全性」中打开「辅助功能」和「屏幕录制」，然后重新打开 ClickDoc。</p>
           </div>
         </li>
       </ol>
       <p class="tip"><span class="rec-dot" aria-hidden="true"></span><span data-i18n="warn.body">ClickDoc 没有程序坞图标，启动后请在屏幕右上角的菜单栏找圆形图标。</span></p>
+      <h3 class="platform-title">Windows</h3>
+      <ol class="instructions">
+        <li>
+          <span class="num">1</span>
+          <div>
+            <h4 data-i18n="win.install">运行安装程序</h4>
+            <p><a href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc-Setup.exe">ClickDoc-Setup.exe</a> <span data-i18n="win.setup">适用于 Windows 10 2004 及以上版本和 Windows 11（x64）。双击安装包，按提示为当前用户安装，无需管理员权限。</span></p>
+            <p class="note" data-i18n="win.smartscreen">安装包尚未签名。如果 SmartScreen 提示「Windows 已保护你的电脑」，确认安装包来自 ClickDoc 官方 Release 后，点「更多信息」再点「仍要运行」。</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">2</span>
+          <div>
+            <h4 data-i18n="win.start">开始录制</h4>
+            <p data-i18n="win.tray">打开任务栏右下角的 ClickDoc 托盘菜单，选择「开始录制」。如果图标被折叠，点任务栏的向上箭头即可找到。</p>
+          </div>
+        </li>
+      </ol>
     </div>
   </section>
 
@@ -225,11 +250,11 @@
     </header>
     <div class="faq">
       <details open><summary data-i18n="q1">打开时提示「无法验证开发者」或「已损坏」</summary><p data-i18n="a1">这是 macOS 对所有未经公证应用的统一拦截，文件本身没有问题。ClickDoc 是个人开源项目，没有付费做公证。按上面安装第 2 步执行一次命令即可。</p></details>
-      <details><summary data-i18n="q2">会上传我的截图吗？</summary><p data-i18n="a2">不会。录制、编辑、导出都在你的 Mac 上完成，应用没有任何联网功能，也不需要账号。</p></details>
+      <details><summary data-i18n="q2">会上传我的截图吗？</summary><p data-i18n="a2">不会。录制、编辑、导出都在你的电脑上完成，应用没有任何联网功能，也不需要账号。</p></details>
       <details><summary data-i18n="q3">为什么需要「辅助功能」和「屏幕录制」权限？</summary><p data-i18n="a3">辅助功能用来感知鼠标点击、读取按钮名称；屏幕录制用来截图。两者缺一不可。</p></details>
       <details><summary data-i18n="q7">和 Folge 有什么不同？</summary><p data-i18n="a7">思路相近，都是录制点击、自动生成分步教程。Folge 功能更全，比如 Word 和 PPT 导出、AI 写说明、品牌模板，完整版一次性售价 89 美元。ClickDoc 更轻量，全部功能免费开源，有中文界面，还能直接导出 Notion 导入包。ClickDoc 与 Folge 没有任何关联。</p></details>
       <details><summary data-i18n="q4">升级后要重新授权吗？</summary><p data-i18n="a4">可能需要。如果「辅助功能」列表里还留着旧的 ClickDoc，先用「−」删掉，再重新授权。</p></details>
-      <details><summary data-i18n="q5">收费吗？支持 Windows 吗？</summary><p data-i18n="a5">完全免费，MIT 协议开源。目前只支持 macOS 14 及以上，Apple 芯片和 Intel 都可以。</p></details>
+      <details><summary data-i18n="q5">收费吗？支持 Windows 吗？</summary><p data-i18n="a5">完全免费，MIT 协议开源。支持 macOS 14 及以上（Apple 芯片或 Intel），以及 Windows 10 2004 及以上版本和 Windows 11（x64）。</p></details>
       <details><summary data-i18n="q6">遇到问题或有想法？</summary><p data-i18n-html="a6">欢迎在 <a href="https://github.com/ibeeger/clickdoc/issues" rel="noopener">GitHub Issues</a> 反馈。</p></details>
     </div>
   </section>
@@ -248,7 +273,10 @@
   <section class="closing">
     <img src="img/icon-256.png" alt="" width="96" height="96">
     <h2 data-i18n="closing.title">下一份教程，点一遍就好</h2>
-    <a class="btn btn-primary" href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg"><span data-i18n="cta.download">下载 macOS 版</span></a>
+    <div class="downloads">
+      <a href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc.dmg" data-i18n="cta.download">下载 macOS 版</a>
+      <a data-windows href="https://github.com/ibeeger/clickdoc/releases/latest/download/ClickDoc-Setup.exe" data-i18n="cta.windows">下载 Windows 版</a>
+    </div>
   </section>
 </main>
 
